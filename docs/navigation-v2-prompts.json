@@ -1,0 +1,43 @@
+{
+  "tool": "Built-in ImageGen",
+  "transparent_background": true,
+  "common": "Use case: stylized-concept. Asset type: one isolated transparent inventory/navigation icon for the original Bomb Hero Bits pixel-art fantasy game. Premium charming original hand-crafted pixel art, bold readable silhouette that remains clear at 48-64 pixels, chunky square pixel clusters and crisp dark navy outlines, limited deep navy/copper/gold/cyan palette, warm amber highlights and tiny luminous cyan accents, cute adventurous beetle-knight/moth-mage/fox-ranger world. Single compact centered subject, entire silhouette inside the central 82 percent of a square canvas, generous transparent margin, actual alpha transparency. No background, no ground plane, no UI frame, no lettering, no numbers, no watermark, no soft painterly or photorealistic rendering. Designed as one coherent collectible game icon family. Subject: ",
+  "specs": [
+    [
+      "home",
+      "a welcoming tiny dark stone dungeon guild entrance, arched amber-lit doorway, short navy stone gate, gold scarab crest with cyan gem above the arch, moss at the base; compact inviting home hub gate."
+    ],
+    [
+      "dungeon",
+      "two ornate crossed short swords, one gold sunblade and one silver/cyan moonblade, with a small gold beetle crest at their crossing; bold compact adventure emblem, bright readable blades."
+    ],
+    [
+      "summon",
+      "a fan of three navy-purple magical hero cards with thick elaborate gold pixel borders, central card bearing a winged gold scarab surrounding a luminous cyan gem; small purple magic sparks."
+    ],
+    [
+      "porter",
+      "an adorable tiny chibi orange fox courier in a navy hood with a large leather backpack and gold buckles, holding a small cyan lantern, full body, prominent fluffy tail, clean readable pixel art."
+    ],
+    [
+      "shop",
+      "an open squat dark wooden supply chest with copper trim, spilling a few large gold coins, one cyan crystal and a rolled purple scroll; compact supply-store emblem."
+    ],
+    [
+      "invite",
+      "one rolled cream parchment invitation tied by a navy ribbon and a large golden winged-scarab wax seal, small cyan gem in the seal; welcoming magical invitation emblem."
+    ],
+    [
+      "chest",
+      "a closed ornate treasure chest in dark navy wood and aged copper/gold trim, prominent golden scarab lock with a glowing cyan gem, a slight amber light shining from the lid seam, three-quarter view."
+    ],
+    [
+      "settings",
+      "a thick bronze eight-tooth mechanical gear enclosing a luminous cyan faceted crystal, tiny gold scarab ornament at the bottom, crisp sturdy symmetrical outline and navy recessed details."
+    ],
+    [
+      "coin",
+      "one thick round gold game coin standing front-on with a slight visible beveled edge, embossed original winged beetle scarab crest and a tiny cyan center gem; bold warm readable currency token, no letters."
+    ]
+  ]
+}

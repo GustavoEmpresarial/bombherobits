@@ -12,15 +12,15 @@ const panels: Record<string, [string, string]> = {
   "/invites": ["INVITES", "/"], "/chest": ["CHEST", "/"],
   "/withdraw": ["REWARD TRANSFER", "/chest"], "/settings": ["SETTINGS", "/"],
 };
-// Crop transparent source padding in the SVG viewport, keeping each icon's proportions.
+// One art family keeps the HUD and shortcut dock visually consistent.
 const shortcuts = [
-  { to: "/", image: "/ui/icon-home.png", label: "Home", size: [256,256], viewBox: "34 26 188 204" },
-  { to: "/dungeon", image: "/ui/icon-dungeon.png", label: "Dungeon", size: [256,256], viewBox: "28 27 200 202" },
-  { to: "/shop/summon", image: "/shop/summon-cards.png", label: "Summon", size: [724,724], viewBox: "33 37 691 630" },
-  { to: "/shop/blacksmiths", image: "/shop/houses/ember-nook.png", label: "Recovery houses", size: [1312,1199], viewBox: "75 75 1160 1060" },
-  { to: "/shop/porter", image: "/shop/porter.png", label: "Porter", size: [724,724], viewBox: "70 123 628 548" },
-  { to: "/shop", image: "/ui/icon-shop.png", label: "Shop", size: [256,256], viewBox: "28 28 200 198" },
-  { to: "/invites", image: "/ui/icon-invite.png", label: "Invites", size: [256,256], viewBox: "37 29 182 196" },
+  { to: "/", image: "/ui/v2/home.webp", label: "Home", caption: "HOME" },
+  { to: "/dungeon", image: "/ui/v2/dungeon.webp", label: "Dungeon", caption: "DUNGEON" },
+  { to: "/shop/summon", image: "/ui/v2/summon.webp", label: "Summon", caption: "SUMMON" },
+  { to: "/shop/blacksmiths", image: "/ui/v2/houses.webp", label: "Recovery houses", caption: "HOUSES" },
+  { to: "/shop/porter", image: "/ui/v2/porter.webp", label: "Porter", caption: "PORTER" },
+  { to: "/shop", image: "/ui/v2/shop.webp", label: "Shop", caption: "SHOP" },
+  { to: "/invites", image: "/ui/v2/invite.webp", label: "Invites", caption: "INVITES" },
 ] as const;
 
 export type DungeonLayoutContext = { setHuntSnapshot: Dispatch<SetStateAction<DungeonSnapshot | null>> };
@@ -37,19 +37,19 @@ export function Layout() {
     <header className="topbar">
       {panel || hunt ? <div className="topbar-back"><Link to={panel?.[1] ?? "/"} className="top-btn" aria-label="Back"><img className="ui-icon" src="/ui/icon-back.png" alt="" /></Link>{panel && <h1 className="topbar-title">{panel[0]}</h1>}{hunt && <HuntStatus snapshot={huntSnapshot} />}</div> : <div className="player"><div className="player-avatar"><img className="ui-icon ui-icon-avatar" src="/ui/icon-hero.png" alt="" /></div><div className="player-text"><div className="player-name">{wallet ? `${wallet.slice(0,4)}…${wallet.slice(-4)}` : user?.displayName ?? "Adventurer"}</div></div></div>}
       <div className="topbar-right">
-        {IS_DEMO && <a className="top-btn demo-session-badge" href="/auth" aria-label="Exit demo" title="Demo progress is separate from the live game. Exit to the public site.">DEMO <span aria-hidden="true">↗</span></a>}
+        {IS_DEMO && <a className="top-btn demo-session-badge" href="/auth" aria-label="Exit demo" title="Demo progress is separate from the live game. Exit to the public site."><i aria-hidden="true" />DEMO <span aria-hidden="true">↗</span></a>}
         {pathname === "/" && <div className="topbar-community" aria-label="Community and token">
           <button type="button" className="top-btn discord-btn" disabled aria-label="Discord — coming soon" title="Discord — coming soon"><span>DISCORD</span></button>
-          <button type="button" className="top-btn token-buy-btn" disabled aria-label="Buy MHDG — coming soon" title="Token purchase link coming soon"><span className="icon-coin" aria-hidden="true"/><span>BUY MHDG</span><span className="token-buy-arrow" aria-hidden="true">↗</span></button>
+          <button type="button" className="top-btn token-buy-btn" disabled aria-label="Buy MHDG — coming soon" title="Token purchase link coming soon"><img className="hud-coin" src="/ui/v2/coin.webp" alt=""/><span>BUY MHDG</span><span className="token-buy-arrow" aria-hidden="true">↗</span></button>
         </div>}
-        {!hunt && <Link to="/invites" className="top-btn invite-btn"><img className="ui-icon" src="/ui/icon-invite.png" alt="" /><span className="invite-label">INVITE</span></Link>}
+        {!hunt && <Link to="/invites" className="top-btn invite-btn"><img className="hud-art" src="/ui/v2/invite.webp" alt="" /><span className="invite-label">INVITE</span></Link>}
         {hunt && <HuntingRewards amount={user?.chest ?? 0} />}
-        <Link to="/chest" className={`mhdg-chip${hunt ? " hunt-balance-chip" : ""}`} aria-label="Balance and rewards"><span className="icon-coin" />{hunt ? <span className="hunt-balance-copy"><small>GAME BALANCE</small><strong>{gold}<span> MHDG</span></strong></span> : <><span className="mhdg-value">{gold}</span><small>MHDG</small></>}</Link>
-        <Link to="/chest" className="top-btn chest-btn" aria-label="Open chest"><img className="ui-icon" src="/sprites/chest.png" alt="" />{(user?.mintCards ?? 0) > 0 && <span className="chest-badge">{user?.mintCards}</span>}</Link>
-        <Link to="/settings" className="top-btn" aria-label="Settings"><img className="ui-icon" src="/ui/icon-gear.png" alt="" /></Link>
+        <Link to="/chest" className={`mhdg-chip${hunt ? " hunt-balance-chip" : ""}`} aria-label="Balance and rewards"><img className="hud-coin" src="/ui/v2/coin.webp" alt="" /><span className={`header-balance-copy${hunt ? " hunt-balance-copy" : ""}`}><small>GAME BALANCE</small><strong>{gold}<span>MHDG</span></strong></span></Link>
+        <Link to="/chest" className="top-btn chest-btn hud-art-button" aria-label="Open chest" title="Chest and hero cards"><img className="hud-art" src="/ui/v2/chest.webp" alt="" />{(user?.mintCards ?? 0) > 0 && <span className="chest-badge" aria-label={`${user?.mintCards} hero cards`}>{(user?.mintCards ?? 0) > 99 ? "99+" : user?.mintCards}</span>}</Link>
+        <Link to="/settings" className="top-btn hud-art-button settings-btn" aria-label="Settings" title="Settings"><img className="hud-art" src="/ui/v2/settings.webp" alt="" /></Link>
       </div>
     </header>
     <main className="stage"><Outlet context={{ setHuntSnapshot } satisfies DungeonLayoutContext} /></main>
-    {!hunt && <nav className="game-dock" aria-label="Game shortcuts" style={{ "--dock-count": shortcuts.length } as CSSProperties}>{shortcuts.map(({to, image, label, size, viewBox}) => <NavLink key={to} to={to} end className={({isActive}) => `game-dock-btn${isActive ? " active" : ""}`} aria-label={label}><svg className="game-dock-icon" viewBox={viewBox} aria-hidden="true" focusable="false"><image href={image} width={size[0]} height={size[1]} /></svg><span>{label}</span></NavLink>)}</nav>}
+    {!hunt && <nav className="game-dock" aria-label="Game shortcuts" style={{ "--dock-count": shortcuts.length } as CSSProperties}><div className="game-dock-track">{shortcuts.map(({to, image, label, caption}) => <NavLink key={to} to={to} end className={({isActive}) => `game-dock-btn${isActive ? " active" : ""}`} aria-label={label} title={label}><img className="game-dock-art" src={image} alt="" draggable="false"/><small className="game-dock-label">{caption}</small></NavLink>)}</div></nav>}
   </div>;
 }

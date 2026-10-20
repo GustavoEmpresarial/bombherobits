@@ -13,6 +13,7 @@ import "./theme.css";
 import "./world.css";
 import "./readability.css";
 import "./polish.css";
+import "./navigation.css";
 
 // Keep shared invite links through the wallet sign-in redirect.
 const invite = inviteFromSearch(window.location.search);
