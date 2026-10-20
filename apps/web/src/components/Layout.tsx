@@ -4,6 +4,7 @@ import { HuntStatus } from "./HuntStatus";
 import { NavLink, Outlet, useLocation, Link } from "react-router-dom";
 import { IS_DEMO, useAuth } from "../state/AuthContext";
 import { HuntingRewards } from "./HuntingRewards";
+import { GameMusic } from "./GameMusic";
 
 const panels: Record<string, [string, string]> = {
   "/heroes": ["HEROES", "/"], "/shop": ["SHOP", "/"],
@@ -37,6 +38,7 @@ export function Layout() {
     <header className="topbar">
       {panel || hunt ? <div className="topbar-back"><Link to={panel?.[1] ?? "/"} className="top-btn" aria-label="Back"><img className="ui-icon" src="/ui/icon-back.png" alt="" /></Link>{panel && <h1 className="topbar-title">{panel[0]}</h1>}{hunt && <HuntStatus snapshot={huntSnapshot} />}</div> : <div className="player"><div className="player-avatar"><img className="ui-icon ui-icon-avatar" src="/ui/icon-hero.png" alt="" /></div><div className="player-text"><div className="player-name">{wallet ? `${wallet.slice(0,4)}…${wallet.slice(-4)}` : user?.displayName ?? "Adventurer"}</div></div></div>}
       <div className="topbar-right">
+        <GameMusic />
         {IS_DEMO && <a className="top-btn demo-session-badge" href="/auth" aria-label="Exit demo" title="Demo progress is separate from the live game. Exit to the public site."><i aria-hidden="true" />DEMO <span aria-hidden="true">↗</span></a>}
         {pathname === "/" && <div className="topbar-community" aria-label="Community and token">
           <button type="button" className="top-btn discord-btn" disabled aria-label="Discord — coming soon" title="Discord — coming soon"><span>DISCORD</span></button>

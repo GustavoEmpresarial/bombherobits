@@ -101,3 +101,9 @@
  .app[data-screen="hunt"] .hunting-rewards-copy>strong{font-size:22px}
  .app[data-screen="hunt"] .topbar-right .hud-art-button{width:40px;height:44px}
 }
+/* A compact pixel-style transport control keeps the soundtrack accessible in the dungeon. */
+.app .topbar-right .music-btn { position:relative;flex:none;width:46px;color:#f4cb77;font:31px/1 var(--font-display);border-color:#8c7047; }
+.app .topbar-right .music-btn.is-playing span { text-shadow:0 0 11px #fac578a0; }
+.app .topbar-right .music-btn:not(.is-playing) { color:#9ca7b3;border-color:#4d5d6b; }
+.app .topbar-right .music-btn i { position:absolute;width:30px;height:2px;background:#e77b83;transform:rotate(-42deg);box-shadow:0 1px #121e29; }
+@media (max-width:700px) { .app .topbar-right .music-btn { width:38px;font-size:26px; } }
