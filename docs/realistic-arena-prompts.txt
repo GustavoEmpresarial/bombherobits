@@ -1,0 +1,27 @@
+Generated using the built-in ImageGen tool. These are live-game texture atlases, not a screenshot background.
+
+MATERIALS ATLAS
+
+Use case: stylized-concept
+Asset type: production game sprite atlas for a high-end dungeon arena.
+Primary request: ONE perfectly aligned 4-column by 4-row sprite sheet, square 2048x2048, sixteen equally sized square cells, no padding between cells, each cell is 512x512. Transparent background outside each asset. No text, no labels, no grid lines, no UI. This atlas will be cut into exact 4x4 frames by the game engine.
+Style: detailed realistic hand-painted / physically rendered 3D fantasy dungeon, weathered stone, bronze, gold, luminous crystals; strong ambient occlusion, tactile roughness, tiny chips, moss, convincing warm amber highlights and cool cyan accents. Diablo-like premium mobile dungeon rendering, NOT pixel art, NOT cartoon flat vector.
+Camera: orthographic directly overhead with a very slight south-facing bevel visible on raised objects, consistent light from upper left. Square footprints aligned with screen axes, absolutely NOT diamond isometric grid. Everything readable at 64px.
+Exact atlas order from top-left, row-major:
+Row 1 (cells 0-3): FOUR different seamless SQUARE floor stone tiles, each fills its entire cell edge to edge; warm gray/brown worn flagstone, subtle fine cracks, multiple small slabs with thin dark grout, damp weathering, very restrained moss at corners, flat walkable surface. All four match color and material.
+Row 2 (cells 4-7): FOUR solid square dungeon stone obstacle pillars/blocks, each centered filling about 85% width and 85% height of its cell with transparent margin; chunky carved dark stone, beveled top surface, deep dark short south-facing side, chipped edges and metal reinforcements, 2 plain stone variants, 1 with amber rune, 1 with cyan rune. These must look solid and impassable, no hollow frames or doorways.
+Row 3 (cells 8-11): FOUR closed treasure containers, each centered filling 80% cell, transparent outside: 8 wooden crate with iron bands; 9 dark reinforced steel chest with warm copper rivets; 10 ornate golden treasure chest with rich orange glow in narrow seams; 11 crystal chest with bright cyan gems and cool glow.
+Row 4 (cells 12-15): 12 ancient relic chest with purple glowing crystals and gold filigree, closed; 13 stone-and-bronze brazier with bright orange fire viewed overhead; 14 long horizontal masonry wall segment viewed overhead, full cell width, dark stone and weathered bronze trim, looks like thick dungeon perimeter; 15 a carved stone corner tower with bronze detail, square footprint centered, transparent around.
+Constraints: each object must stay strictly inside its own cell. Exactly 4 rows and 4 columns. No characters, no heroes, no letters, no numbers, no watermarks. Transparent gutters within object cells. The four floor cells alone are opaque squares. Cohesive premium realistic materials, clear silhouettes.
+
+DIRECTIONAL HERO ATLAS
+
+Use case: stylized-concept
+Asset type: 3D fantasy game character directional sprite atlas, transparent background.
+Create exactly a FOUR COLUMN by THREE ROW sprite atlas, twelve equal rectangular cells, total image 2048x1536, each cell 512x512. No labels, no lines, no text. Consistent orthographic overhead camera with torso and head clearly visible like a premium Diablo-style 3D dungeon game, NOT pixel art. Strong coherent upper-left warm light, metallic roughness, excellent silhouette readability at 45px. Every character full body, centered, same size, occupies about 72% of its cell, no contact shadows outside its own cell, transparent background.
+Columns represent four look directions: column1 facing south toward viewer, column2 facing west left, column3 facing east right, column4 facing north away from viewer.
+Row1: Aurek, a tiny heroic beetle knight in ornate burnished golden armor, dark beetle face, luminous cyan eyes, small antennae, carrying sun sword and small shield. Same character all four columns.
+Row2: Vesper, mysterious moth mage with elegant folded purple moth wings and deep violet robes, ivory moth face and fluffy antennae, luminous violet eyes, carrying long crescent moon staff with purple crystal. Same character all four columns.
+Row3: Cinder, clever orange red fox ranger wearing dark leather hood and brown armor with bronze trim, fluffy orange tail with cream tip, holding a compact crossbow. Same character all four columns.
+Style high quality physically rendered 3D fantasy game assets, realistic brushed gold, worn leather, silky wings, rich believable colors, sharp contours, dimensional volume, no thick cartoon outlines. Feet towards bottom of cell for south view. All twelve cells strictly separated by invisible equal grid. No scenery, no floors, no pedestals, no UI. Preserve each hero's distinct gold, purple, orange color identity.
+

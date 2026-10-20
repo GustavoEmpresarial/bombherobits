@@ -1,0 +1,42 @@
+.app[data-screen="hunt"] .topbar-back { flex: 1; min-width: 0; gap: 18px; }
+.hunt-topbar-status { display: grid; grid-template-columns: minmax(165px,1fr) 76px minmax(165px,210px) 96px; align-items: center; gap: 10px; width: 100%; min-width: 0; color: #eeeada; }
+.hunt-location { display: grid; gap: 7px; min-width: 0; padding-left: 13px; border-left: 2px solid #4c8e8b; }
+.hunt-location small, .hunt-topbar-stat small { color: #92aab7; font: 9px/1.2 var(--font-ui); letter-spacing: 1px; white-space: nowrap; }
+.hunt-location small { display: flex; align-items: center; gap: 6px; color: #8dc9c1; }
+.hunt-location small i { width: 4px; height: 4px; background: #8bd2a4; box-shadow: 0 0 7px #8bd2a444; }
+.hunt-location > strong { color: #eee7d6; font: 23px/1 var(--font-display); white-space: nowrap; }
+.hunt-topbar-stat { display: grid; align-content: center; gap: 4px; height: 54px; min-width: 0; padding: 6px 12px; border: 1px solid #32434e; background: linear-gradient(#1b2933,#131e28); box-shadow: inset 0 1px #ffffff06,0 2px #080d13; font-variant-numeric: tabular-nums; }
+.hunt-topbar-stat strong { font: 400 30px/1 var(--font-display); }
+.hunt-wave { text-align: center; border-color: #655236; background: linear-gradient(#302a20,#1e2224); }
+.hunt-wave small { color: #d1b886; }
+.hunt-wave strong { color: #ffdb93; }
+.hunt-crates { position: relative; display: flex; align-items: center; gap: 11px; padding-bottom: 9px; }
+.hunt-crates img { width: 29px; height: 29px; object-fit: contain; image-rendering: pixelated; }
+.hunt-crates-copy { display: grid; gap: 4px; }
+.hunt-crates strong { color: #f0eee3; }
+.hunt-crates strong > span { font-size: 19px; color: #91a8b6; }
+.hunt-wave-progress { position: absolute; left: 9px; right: 9px; bottom: 4px; height: 3px; background: #070e15; overflow: hidden; }
+.hunt-wave-progress span { display: block; height: 100%; background: #89bdb1; }
+.hunt-opened strong { color: #c2d6bf; }
+.hunt-opened small { font-size: 8px; letter-spacing: .7px; }
+@media (max-width: 1190px) {
+ .hunt-location { display: none; }
+ .hunt-topbar-status { grid-template-columns: 65px minmax(138px,1fr) 88px; }
+}
+@media (max-width: 850px) {
+ .app[data-screen="hunt"] .topbar-back { gap: 10px; }
+ .hunt-topbar-status { gap: 6px; grid-template-columns: 55px minmax(116px,1fr) 76px; }
+ .hunt-topbar-stat { padding-inline: 8px; }
+ .hunt-topbar-stat strong { font-size: 27px; }
+ .hunt-topbar-stat small { font-size: 8px; letter-spacing: .5px; }
+ .hunt-crates { gap: 6px; }
+ .hunt-crates img { width: 23px; height: 23px; }
+}
+@media (max-width: 700px) {
+ .app[data-screen="hunt"] .topbar { height: auto; min-height: 130px; flex-wrap: wrap; padding: 9px 12px 11px; row-gap: 9px; }
+ .app[data-screen="hunt"] .topbar-back { flex: 1 1 100%; }
+ .hunt-topbar-status { grid-template-columns: 55px minmax(0,1fr) 80px; }
+ .hunt-topbar-stat { height: 50px; }
+ .app[data-screen="hunt"] .topbar-right { margin-left: auto; }
+}
+@media (max-width: 380px) { .hunt-crates img { display: none; } .hunt-topbar-status { grid-template-columns: 49px minmax(0,1fr) 72px; gap: 5px; } }

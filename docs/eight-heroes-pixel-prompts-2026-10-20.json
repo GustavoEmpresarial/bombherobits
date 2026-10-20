@@ -1,0 +1,52 @@
+{
+  "tool": "image_gen.imagegen",
+  "prompt": "Use case: style-transfer. Input images 1, 2 and 3 are the AUTHORITATIVE PIXEL ART STYLE REFERENCES from the original Hero Bits game (Aurek, Vesper and Cinder). Input image 4 is the CHARACTER DESIGN TO REDRAW. Redraw only the character from image 4 as a genuinely low-resolution, compact fantasy RPG pixel sprite that belongs in the same game as images 1–3. Keep the character's recognizable hair color, outfit palette, weapon type and role from image 4, but replace the entire illustration rendering and proportions with the original game style. Exact visual priorities: small stocky adventurer with a roughly 2.5-head-tall compact silhouette; face and eyes are tiny simple pixel clusters, not huge anime eyes; chunky dark one-pixel outlines; limited palette; visible square pixel clusters; hard stepped edges; small bright armor highlights and simple shaded cloth. Match the pixel density and abstraction level of references 1–3, NOT a smooth high-resolution anime portrait. Think a 64–80px-tall native sprite enlarged with nearest-neighbor so every pixel remains a clear uniform square. No smooth linework, no painted texture, no gradient airbrushing, no anti-aliased curves, no 3D, no long slim limbs. Full body from head to boots, three-quarter front view, standing idle RPG pose facing slightly right, all hair, weapons, cape and accessories fully visible. Simplify fine costume detail aggressively so the design reads at game scale. One character centered on a square transparent canvas with 12% empty margins, no card frame, no labels or text, no logo, no scenery, no ground plane, no shadow blob, no detached effects. Preserve actual transparent alpha.",
+  "references": [
+    "aurek-portrait.png",
+    "vesper-portrait.png",
+    "cinder-portrait.png",
+    "collection/<hero>.png"
+  ],
+  "images": [
+    {
+      "id": "kael",
+      "source": "/home/gustavo/.codex/generated_images/01a146bc-2b04-7040-929e-62b82a35b1b6/exec-ddb66659-7940-4d8e-8a1f-c966f706ccfb.png",
+      "destination": "apps/web/public/characters/collection/pixel/kael.png"
+    },
+    {
+      "id": "lyra",
+      "source": "/home/gustavo/.codex/generated_images/01a146bc-2b04-7040-929e-62b82a35b1b6/exec-db576d61-2151-40de-b566-de3f6eecda77.png",
+      "destination": "apps/web/public/characters/collection/pixel/lyra.png"
+    },
+    {
+      "id": "ronan",
+      "source": "/home/gustavo/.codex/generated_images/01a146bc-2b04-7040-929e-62b82a35b1b6/exec-bf618856-e65e-4ea0-a7ea-e72c04e870ff.png",
+      "destination": "apps/web/public/characters/collection/pixel/ronan.png"
+    },
+    {
+      "id": "mira",
+      "source": "/home/gustavo/.codex/generated_images/01a146bc-2b04-7040-929e-62b82a35b1b6/exec-6b9da75a-2949-47b8-99e0-1792093fd378.png",
+      "destination": "apps/web/public/characters/collection/pixel/mira.png"
+    },
+    {
+      "id": "solenne",
+      "source": "/home/gustavo/.codex/generated_images/01a146bc-2b04-7040-929e-62b82a35b1b6/exec-d828451a-2193-4c4c-a5f8-a4b78e1b7c27.png",
+      "destination": "apps/web/public/characters/collection/pixel/solenne.png"
+    },
+    {
+      "id": "elowen",
+      "source": "/home/gustavo/.codex/generated_images/01a146bc-2b04-7040-929e-62b82a35b1b6/exec-5bc89168-ea70-4abf-9702-bb7cef8574ac.png",
+      "destination": "apps/web/public/characters/collection/pixel/elowen.png"
+    },
+    {
+      "id": "raizen",
+      "source": "/home/gustavo/.codex/generated_images/01a146bc-2b04-7040-929e-62b82a35b1b6/exec-5fbe7520-5e02-41b6-8cd4-f24fd5ba3cae.png",
+      "destination": "apps/web/public/characters/collection/pixel/raizen.png"
+    },
+    {
+      "id": "vael",
+      "source": "/home/gustavo/.codex/generated_images/01a146bc-2b04-7040-929e-62b82a35b1b6/exec-68e06882-c05c-43b7-abce-223cf9796b4a.png",
+      "destination": "apps/web/public/characters/collection/pixel/vael.png"
+    }
+  ]
+}

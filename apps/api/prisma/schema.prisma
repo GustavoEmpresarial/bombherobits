@@ -1,0 +1,287 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+model CreatorApplication {
+  id         String   @id @default(cuid())
+  name       String
+  email      String
+  platform   String
+  followers  String
+  channelUrl String
+  language   String
+  about      String
+  wallet     String?
+  disclosure Boolean
+  status     String   @default("PENDING")
+  createdAt  DateTime @default(now())
+  reviewedAt DateTime?
+
+  @@index([status, createdAt])
+  @@index([email, createdAt])
+}
+
+model WhitelistApplication {
+  id              String   @id @default(cuid())
+  email           String
+  xHandle         String
+  discordUsername String
+  wallet          String?
+  followedX       Boolean
+  joinedDiscord   Boolean
+  status          String   @default("PENDING")
+  createdAt       DateTime @default(now())
+  reviewedAt      DateTime?
+
+  @@index([status, createdAt])
+  @@unique([email])
+  @@unique([xHandle])
+  @@unique([discordUsername])
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum HeroClass {
+  WARRIOR
+  MAGE
+  ROGUE
+}
+
+enum HeroRarity {
+  COMMON
+  RARE
+  SUPER_RARE
+  EPIC
+  LEGENDARY
+  SUPER_LEGENDARY
+}
+
+enum HeroStatus {
+  IDLE
+  HUNTING
+  LISTED
+}
+
+enum ListingKind {
+  HERO
+  BLACKSMITH
+  PORTER
+}
+
+enum ListingStatus {
+  OPEN
+  SOLD
+  CANCELLED
+}
+
+enum TargetType {
+  SLIME
+  BLOCK
+}
+
+enum DungeonRunStatus {
+  ACTIVE
+  ENDED
+}
+
+model User {
+  id           String       @id @default(cuid())
+  wallet       String       @unique
+  displayName  String
+  gold         Decimal      @default(500) @db.Decimal(18, 2)
+  chest        Decimal      @default(0) @db.Decimal(18, 2)
+  mintCards    Int          @default(0)
+  inviteCode   String?      @unique
+  referredBy   String?
+  porterOn     Boolean      @default(false)
+  staminaUpdatedAt DateTime @default(now())
+  createdAt    DateTime     @default(now())
+  summonBatches SummonBatch[]
+  heroes       Hero[]
+  blacksmiths  Blacksmith[]
+  porters      Porter[]
+  listings     Listing[]
+  dungeonRuns  DungeonRun[]
+  rewardLogs   RewardLog[]
+}
+
+model Blacksmith {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tier      Int
+  inService Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+}
+
+model Porter {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+}
+
+model Listing {
+  id        String        @id @default(cuid())
+  sellerId  String
+  seller    User          @relation(fields: [sellerId], references: [id], onDelete: Cascade)
+  kind      ListingKind
+  refId     String
+  title     String
+  price     Decimal       @db.Decimal(18, 2)
+  status    ListingStatus @default(OPEN)
+  createdAt DateTime      @default(now())
+
+  @@index([status, kind])
+  @@index([sellerId])
+}
+
+model AuthChallenge {
+  id        String   @id @default(cuid())
+  wallet    String
+  nonce     String   @unique
+  message   String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([wallet])
+}
+
+model Hero {
+  summonSlot Int?
+  summonBatchId String?
+  summonBatch SummonBatch? @relation(fields:[summonBatchId],references:[id],onDelete:SetNull)
+  id         String     @id @default(cuid())
+  userId     String
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  class      HeroClass
+  rarity     HeroRarity
+  level      Int        @default(1)
+  atk        Int
+  spd        Int
+  stamina    Int
+  maxStamina Int
+  staminaRecoveryUnits Int @default(0)
+  staminaUsageUnits Int @default(0)
+  status     HeroStatus @default(IDLE)
+  dungeonX   Int?
+  dungeonY   Int?
+  createdAt  DateTime   @default(now())
+
+  @@index([userId])
+  @@index([userId, status])
+  @@unique([summonBatchId,summonSlot])
+}
+
+model DungeonRun {
+  id         String           @id @default(cuid())
+  userId     String
+  user       User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  status     DungeonRunStatus @default(ACTIVE)
+  startedAt  DateTime         @default(now())
+  lastTickAt DateTime         @default(now())
+  wave       Int              @default(1)
+  waveTotal  Int              @default(60)
+  openedCrates Int            @default(0)
+  combatSequence Int          @default(0)
+  combatEvents Json           @default("[]")
+  endedAt    DateTime?
+  targets    DungeonTarget[]
+
+  @@index([userId, status])
+}
+
+model DungeonTarget {
+  id    String     @id @default(cuid())
+  runId String
+  run   DungeonRun @relation(fields: [runId], references: [id], onDelete: Cascade)
+  type  TargetType
+  kind  String @default("wooden-crate")
+  reward Decimal @default(50) @db.Decimal(18, 2)
+  hp    Int
+  maxHp Int
+  x     Int
+  y     Int
+
+  @@index([runId])
+  @@unique([runId, x, y])
+}
+
+model RewardLog {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  amount    Decimal  @db.Decimal(18, 2)
+  source    String
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+}
+
+model RuntimeSettings {
+  id String @id @default("active")
+  data Json
+  revision Int @default(1)
+  updatedAt DateTime @updatedAt
+}
+model AdminUser {
+  id String @id @default(cuid())
+  username String @unique
+  passwordHash String
+  disabled Boolean @default(false)
+  createdAt DateTime @default(now())
+  sessions AdminSession[]
+  changes AdminChange[]
+}
+model AdminSession {
+  id String @id @default(cuid())
+  tokenHash String @unique
+  adminId String
+  admin AdminUser @relation(fields:[adminId], references:[id], onDelete:Cascade)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+}
+model AdminChange {
+  id String @id @default(cuid())
+  adminId String
+  admin AdminUser @relation(fields:[adminId],references:[id])
+  section String
+  before Json
+  after Json
+  revision Int
+  createdAt DateTime @default(now())
+}
+
+enum SummonStatus {
+ SEALED
+ REVEALED
+ CLAIMED
+}
+enum SummonSource {
+ GOLD
+ CARDS
+}
+model SummonBatch {
+ id String @id @default(cuid())
+ userId String
+ user User @relation(fields:[userId],references:[id],onDelete:Cascade)
+ source SummonSource
+ status SummonStatus @default(SEALED)
+ count Int
+ cost Decimal @db.Decimal(18,2)
+ requestKey String
+ rolls Json
+ createdAt DateTime @default(now())
+ revealedAt DateTime?
+ claimedAt DateTime?
+ heroes Hero[]
+ @@unique([userId,requestKey])
+ @@index([userId,status])
+}

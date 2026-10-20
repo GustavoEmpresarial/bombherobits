@@ -1,0 +1,67 @@
+{
+  "retrievedAt": "2026-10-16T21:26:52.6211997Z",
+  "statRanges": {
+    "value": [
+      [
+        1,
+        3
+      ],
+      [
+        3,
+        6
+      ],
+      [
+        6,
+        9
+      ],
+      [
+        9,
+        12
+      ],
+      [
+        12,
+        15
+      ],
+      [
+        15,
+        18
+      ]
+    ],
+    "status": "confirmed",
+    "economic": true,
+    "source": "https://github.com/senspark/bombcrypto-contract-v2 (BHeroDesign.sol / BHouseDesign.sol initialize()) rarityStats"
+  },
+  "source": "https://www.solanabombers.fun/api/config",
+  "energy": {
+    "perStamina": {
+      "value": 50,
+      "status": "confirmed",
+      "economic": true,
+      "source": "https://github.com/senspark/bombcrypto-server-v2 (GameConstants.kt, Hero.kt, House.kt) maxEnergy = stamina * 50; https://playerassist.com/nft-gaming-best-bomb-crypto-guide-for-beginners/ (22 Dec 2021)"
+    },
+    "costPerBomb": {
+      "value": 1,
+      "status": "confirmed",
+      "economic": true,
+      "source": "https://github.com/senspark/bombcrypto-server-v2 (GameConstants.kt, Hero.kt, House.kt) Hero.subEnergy()"
+    },
+    "saveBatteryChancePct": {
+      "value": 20,
+      "status": "conflicting",
+      "economic": true,
+      "source": "https://github.com/senspark/bombcrypto-market-v2 (frontend/src/utils/helper.ts) UI text 20% (server comment says 30%)"
+    },
+    "restOutsideMilliPerMin": {
+      "value": 500,
+      "status": "confirmed",
+      "economic": true,
+      "source": "https://github.com/senspark/bombcrypto-server-v2 (GameConstants.kt, Hero.kt, House.kt) 0.5f fallback; https://playerassist.com/nft-gaming-best-bomb-crypto-guide-for-beginners/ (22 Dec 2021) \"1 energy every 2 mins\""
+    },
+    "fastChargeMilliPerMin": {
+      "value": 500,
+      "status": "conflicting",
+      "economic": true,
+      "source": "https://github.com/senspark/bombcrypto-market-v2 (frontend/src/utils/helper.ts) \"+0,5 Stamina/Min\" (server comment says +5)"
+    }
+  }
+}

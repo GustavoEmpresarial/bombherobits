@@ -1,0 +1,40 @@
+{
+  "name": "@herobits/api",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "db:generate": "prisma generate",
+    "db:migrate": "prisma migrate deploy",
+    "db:migrate:dev": "prisma migrate dev",
+    "db:push": "prisma db push",
+    "db:seed": "tsx prisma/seed.ts",
+    "test": "tsx --test tests/stamina-recovery.test.ts tests/stamina-usage.test.ts tests/combat-events.test.ts tests/loot-wave.test.ts tests/hero-targeting.test.ts tests/summon-rarities.test.ts tests/snapshot-order.test.ts tests/render-collision.test.ts tests/summon-ui-state.test.ts tests/invite-links.test.ts tests/creators.test.ts tests/marketing.test.ts tests/early-access.test.ts tests/demo-world.test.ts",
+    "test:integration": "tsx --test tests/stamina.integration.test.ts tests/dungeon-combat.integration.test.ts tests/admin.integration.test.ts tests/hero-targeting.integration.test.ts tests/summon-batches.integration.test.ts tests/world-actions.integration.test.ts tests/marketing-admin.integration.test.ts tests/demo-access.integration.test.ts",
+    "admin:setup": "tsx scripts/setup-admin.ts",
+    "admin:rotate": "tsx scripts/rotate-admin.ts"
+  },
+  "dependencies": {
+    "@fastify/cors": "^11.0.1",
+    "@fastify/jwt": "^9.1.0",
+    "@fastify/websocket": "^11.0.2",
+    "@herobits/shared": "workspace:*",
+    "@prisma/client": "^6.6.0",
+    "@solana/web3.js": "^1.98.2",
+    "bs58": "^6.0.0",
+    "dotenv": "^16.5.0",
+    "fastify": "^5.3.2",
+    "tweetnacl": "^1.0.3",
+    "zod": "^3.24.3"
+  },
+  "devDependencies": {
+    "@types/node": "^22.14.1",
+    "@types/ws": "^8.18.1",
+    "prisma": "^6.6.0",
+    "tsx": "^4.19.3",
+    "typescript": "^5.8.3"
+  }
+}

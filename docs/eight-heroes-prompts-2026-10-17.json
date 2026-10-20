@@ -1,0 +1,70 @@
+{
+  "tool": "Built-in ImageGen",
+  "commonPrompt": "Use case: stylized-concept. Asset type: ONE transparent full-body hero portrait for Bomb Hero Bits, a premium cute chibi pixel-fantasy RPG character collection. Style: polished collectible anime JRPG chibi character, approximately 2.4 heads tall, oversized head and eyes, tiny compact body and short legs, stylish original outfit, highly appealing personality. Crisp stepped pixel-like outlines and carefully placed cel-shading clusters, rich jewel colors and concentrated highlights, game character selection illustration. NOT realistic, NOT a smooth 3D render, no painterly blur. Clean coherent dark outline, extremely readable silhouette at 160px. Composition: full body head-to-toe standing pose, slight three-quarter front view, character centered and occupies 82% of canvas height with clear transparent margins on all sides. Every weapon, accessory and hair tip fully inside frame. Single character only. Genuinely transparent alpha background. No card border, no rarity badge, no text or lettering, no numbers, no logo, no scenery, no floor plane, no pedestal, no drop-shadow blob or unrelated floating particles. All portraits belong to one coherent chibi RPG collection. Subject: ",
+  "heroes": [
+    {
+      "id": "kael",
+      "name": "Kael",
+      "rarity": "RARE",
+      "subject": "A cute young male frost swordsman with short tousled ice-blue hair, big teal eyes, a navy fur-collared short cloak and silver-blue segmented armor. Wields a compact ice-crystal broadsword held upright beside him, tiny boots, a cheeky determined smile. Clear bright blue and white palette. Human anime chibi.",
+      "source": "/home/gustavo/.codex/generated_images/01a146bc-2b04-7040-929e-62b82a35b1b6/exec-f776f601-fd13-46a1-994f-c1aed933abee.png",
+      "file": "/home/gustavo/Documentos/HeroBits/apps/web/public/characters/collection/kael.png"
+    },
+    {
+      "id": "lyra",
+      "name": "Lyra",
+      "rarity": "SUPER RARE",
+      "subject": "A cute young female elven moon archer, warm tan skin, huge luminous lavender eyes, short dark-purple bob hairstyle with two small silver braid ornaments, pointed elf ears. Deep indigo and violet ranger dress with ornate silver trim, small crescent-shaped recurve bow held beside her body and a tiny quiver. Playful confident expression. Humanlike anime elf chibi.",
+      "source": "/home/gustavo/.codex/generated_images/01a146bc-2b04-7040-929e-62b82a35b1b6/exec-e78dfeed-d5f8-453e-8790-d22083254a64.png",
+      "file": "/home/gustavo/Documentos/HeroBits/apps/web/public/characters/collection/lyra.png"
+    },
+    {
+      "id": "ronan",
+      "name": "Ronan",
+      "rarity": "EPIC",
+      "subject": "A cute small male oni samurai with messy auburn hair, two short dark red horns, a tiny ivory oni mask tilted at the side of his forehead so his big determined brown eyes are visible. Black and crimson layered samurai armor, short maroon scarf, one curved ember katana held low beside his body. Friendly fierce chibi expression. Humanlike anime oni chibi, no resemblance to an existing anime protagonist.",
+      "source": "/home/gustavo/.codex/generated_images/01a146bc-2b04-7040-929e-62b82a35b1b6/exec-bd65e75a-8cda-4a10-a8cb-d520456f76fe.png",
+      "file": "/home/gustavo/Documentos/HeroBits/apps/web/public/characters/collection/ronan.png"
+    },
+    {
+      "id": "mira",
+      "name": "Mira",
+      "rarity": "EPIC",
+      "subject": "A cute small female raven witch with a short midnight-black bob, huge amethyst eyes, an oversized crooked plum witch hat with a small sapphire clasp, black and purple layered dress, short striped stockings and little boots. A tiny cute blue-black raven perched on her shoulder, holds a small amethyst spellbook open near her waist. Smirking mischievous face. Human anime chibi.",
+      "source": "/home/gustavo/.codex/generated_images/01a146bc-2b04-7040-929e-62b82a35b1b6/exec-915bbd6f-e531-4f80-88c3-ef160b3c1d1e.png",
+      "file": "/home/gustavo/Documentos/HeroBits/apps/web/public/characters/collection/mira.png"
+    },
+    {
+      "id": "solenne",
+      "name": "Solenne",
+      "rarity": "LEGENDARY",
+      "subject": "An adorable young female sun paladin with warm brown skin, huge golden eyes, fluffy white-gold shoulder-length curls, small golden crown with one sun motif, ivory and warm gold armor over a short cream tunic. Holds a compact golden sun hammer and a small round ivory shield. Tiny short cape, short legs, bright gentle heroic smile. Human anime chibi.",
+      "source": "/home/gustavo/.codex/generated_images/01a146bc-2b04-7040-929e-62b82a35b1b6/exec-b31b0a78-9dbd-4665-abdf-3db0206f3632.png",
+      "file": "/home/gustavo/Documentos/HeroBits/apps/web/public/characters/collection/solenne.png"
+    },
+    {
+      "id": "elowen",
+      "name": "Elowen",
+      "rarity": "LEGENDARY",
+      "subject": "An adorable young female woodland spellcaster with peach skin, big emerald eyes, rose-pink twin braids, small deer-antler flower crown. Ivory and pale mint layered petal dress with gold ornaments, tiny boots. Holds a short staff topped with an emerald crystal enclosed by golden leaves, a soft pink scarf. Sweet confident expression. Humanlike forest elf anime chibi, delicate original costume.",
+      "source": "/home/gustavo/.codex/generated_images/01a146bc-2b04-7040-929e-62b82a35b1b6/exec-bf3b59d0-ee60-44ed-8c65-6489d52b2c01.png",
+      "file": "/home/gustavo/Documentos/HeroBits/apps/web/public/characters/collection/elowen.png"
+    },
+    {
+      "id": "raizen",
+      "name": "Raizen",
+      "rarity": "SUPER LEGEND",
+      "subject": "An adorable but formidable tiny male storm dragon knight with deep brown skin, big electric-cyan eyes, wild short white hair with dark navy streaks. Short cobalt and black dragon-scale armor with gold trims, one small swept-back blue horn on either side of his head, short royal blue cloak. Holds a compact two-pronged lightning spear close beside his body. A few contained cyan lightning accents hugging the weapon, no detached particles. Confident fearless grin. Humanlike dragon anime chibi.",
+      "source": "/home/gustavo/.codex/generated_images/01a146bc-2b04-7040-929e-62b82a35b1b6/exec-f54a5b4d-d8a3-4e1e-82ec-3df76faf683d.png",
+      "file": "/home/gustavo/Documentos/HeroBits/apps/web/public/characters/collection/raizen.png"
+    },
+    {
+      "id": "vael",
+      "name": "Vael",
+      "rarity": "SUPER LEGEND",
+      "subject": "An adorable mysterious small male eclipse assassin with pale cool skin, huge red-violet eyes, asymmetrical silver hair with a black undercut, a tiny dark-gold half-crown. Layered black and burgundy cloak with luminous crimson rune seams, slim black fantasy armor, tiny tall boots, a pair of compact crescent daggers pointing down by his sides. Soft dark feather collar and one small red gem brooch. Calm confident smile, cute proportions, human anime chibi. No skulls and no gore.",
+      "source": "/home/gustavo/.codex/generated_images/01a146bc-2b04-7040-929e-62b82a35b1b6/exec-b0107347-b41e-4d9b-857c-f1b63d4813f6.png",
+      "file": "/home/gustavo/Documentos/HeroBits/apps/web/public/characters/collection/vael.png"
+    }
+  ]
+}

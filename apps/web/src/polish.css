@@ -1,0 +1,548 @@
+/* Shared layout rhythm, applied after the screen-specific art and typography. */
+:root {
+  --page-width: 1440px;
+  --page-gutter: clamp(18px, 3vw, 48px);
+  --panel-padding: clamp(22px, 2.4vw, 32px);
+  --section-gap: clamp(22px, 2.4vw, 32px);
+}
+
+/* The dock occupies its own row on content pages, so it never covers a control. */
+.app[data-screen="panel"] > .game-dock, .app[data-screen="lobby"] > .game-dock {
+  position: relative;
+  inset: auto;
+  flex: none;
+  justify-content: flex-end;
+  width: 100%;
+  padding: 12px var(--page-gutter) max(14px, env(safe-area-inset-bottom));
+  background: #0d1827;
+  box-shadow: inset 0 1px #385165;
+}
+.page, .page.heroes-page {
+  padding: 28px var(--page-gutter) 36px;
+  scroll-padding-block: 24px;
+  scrollbar-gutter: stable;
+}
+.page > .page-heading,
+.page > .heroes-layout,
+.page > .summon-layout,
+.page > .summon-pending-packs {
+  max-width: var(--page-width);
+  margin-inline: auto;
+}
+.page-heading { align-items: flex-start; margin-bottom: var(--section-gap); padding-bottom: 24px; }
+.page-heading > div, .page-heading > :last-child { min-width: 0; }
+.page-heading h2 { line-height: 1.12; text-wrap: balance; margin-block: 10px 12px; }
+.page-heading p { max-width: 74ch; text-wrap: pretty; }
+.page-eyebrow { display: inline-block; line-height: 1.5; }
+.page-panel { min-width: 0; }
+.page-panel-title { line-height: 1.12; text-wrap: balance; margin: 0; }
+.page-panel-text, .page-note, .error-line { overflow-wrap: anywhere; }
+.page-panel-text { margin-top: 14px; }
+.page-state { margin: clamp(28px, 8vh, 80px) auto; padding: 24px; }
+
+/* Buttons grow when their labels wrap instead of cutting off the last line. */
+.page .cta {
+  height: auto;
+  min-height: 48px;
+  padding: 12px 18px 15px;
+  line-height: 1.1;
+  white-space: normal;
+  text-align: center;
+  font-size: clamp(23px, 2.2vw, 29px);
+}
+.page .cta-big { min-height: 58px; }
+.page button.cta-alt:not(.cta) { min-height: 44px; height: auto; padding: 11px 16px 14px; line-height: 1.1; }
+.cta:focus-visible, button.cta-alt:focus-visible, .seg-option:focus-visible { outline-offset: -4px; }
+.page .icon-coin, .topbar .icon-coin { flex-shrink: 0; }
+.summon-total, .chest-value, .mhdg-value, .porter-price-value { font-variant-numeric: tabular-nums; }
+.summon-total { flex-wrap: wrap; row-gap: 10px; }
+.summon-total > strong { margin-left: auto; max-width: 100%; flex-wrap: wrap; justify-content: flex-end; }
+.summon-total > span { min-width: 0; }
+.summon-total .icon-coin { display: inline-block; }
+
+/* Shop, summons and services share the same panel and content spacing. */
+.page .page-modes { width: min(1080px, 100%); gap: 24px; padding-block: 0 12px; }
+.page-modes .mode { flex: 1 1 0; width: auto; max-width: 340px; }
+.page-modes .mode-card { display: flex; flex-direction: column; }
+.page-modes .mode-name { flex-shrink: 0; font-size: clamp(26px, 2.5vw, 36px); }
+.shop-description { margin: 14px 8px 12px; min-height: 38px; display: grid; place-items: center; }
+.summon-layout { min-height: 0; align-items: start; }
+.summon-stage { height: clamp(300px, 38vw, 500px); overflow: hidden; }
+.summon-buy, .forge-panel, .chest-reward, .porter-panel { padding: var(--panel-padding); }
+.summon-buy > .seg { grid-template-columns: repeat(auto-fit, minmax(52px, 1fr)); gap: 8px; }
+.seg-option { height: 52px; font-size: 30px; }
+.odds-row { height: auto; min-height: 40px; padding-block: 7px; grid-template-columns: 24px minmax(0,1fr) 74px; }
+.odds-name { overflow-wrap: anywhere; }
+.forge-layout { align-items: start; }
+.forge-panel .roster-list { margin-top: 22px; padding: 0; }
+.forge-panel .roster-row { align-items: center; flex-wrap: wrap; padding: 16px; }
+.forge-panel .roster-meta { min-width: 0; flex: 1 1 180px; }
+.forge-panel .roster-name { line-height: 1.15; overflow-wrap: anywhere; }
+.forge-panel .roster-stats { margin-top: 7px; }
+.forge-panel .roster-row > button { flex: 0 0 auto; min-width: 94px; }
+.forge-panel > button { margin-top: 20px; }
+.porter-panel { margin-block: 0; }
+.porter-info { min-width: 0; }
+.porter-reqs p { margin-block: 8px; }
+.porter-switch-row { flex-wrap: wrap; }
+.porter-switch-row > .cta { min-width: 80px; }
+.porter-switch-row > .page-note { flex: 1 1 190px; margin: 0; }
+.porter-buy { grid-template-columns: auto minmax(0,1fr); }
+.chest-rewards { align-items: stretch; }
+.chest-reward { display: flex; flex-direction: column; }
+.chest-reward > .cta, .chest-reward > .chest-opens { margin-top: auto; }
+.chest-reward > .page-note { margin-bottom: 24px; }
+.chest-value { overflow-wrap: anywhere; }
+.chest-opens { flex-wrap: wrap; }
+.chest-opens .cta { flex: 1 1 100px; }
+.withdraw-layout .summon-total { padding-bottom: 18px; margin-top: 22px; }
+.withdraw-layout > .cta { margin-top: 24px; }
+.withdraw-progress .page-note { margin-top: 12px; }
+.settings-list .setting { margin: 0; min-height: 76px; gap: 20px; }
+.settings-list .setting > span { flex: 1; }
+.settings-list .setting > strong { font: 12px/1.7 var(--font-ui); letter-spacing: .3px; max-width: 66%; }
+.settings-list .setting > button { flex: none; min-width: 72px; }
+.settings-list .setting input[type="range"] { flex: 0 1 180px; min-height: 44px; margin: 0; }
+.invite-code-box { min-width: 0; flex-wrap: wrap; }
+.invite-code-box strong { overflow-wrap: anywhere; min-width: 0; font-size: 27px; line-height: 1.2; }
+.invite-rules p { margin-block: 0; }
+.invite-rules p + p { margin-top: 10px; }
+.invite-join-row input { font-family: var(--font-ui); }
+.market-preview { margin-inline: auto; }
+.market-preview > div { min-width: 0; }
+.market-preview h3 { line-height: 1.12; text-wrap: balance; }
+.market-preview p { font: 14px/1.8 var(--font-ui); color: var(--reading-text); }
+
+/* Reserve the full image-logo height, including the tagline, above the cards. */
+.lobby-modes { padding-top: clamp(184px,calc(10vw + 64px),208px); padding-bottom: 104px; }
+@media (max-height: 750px) and (min-width: 701px) {
+  .lobby-modes { padding-top: 164px; }
+}
+@media (max-width: 700px) {
+  .lobby-modes { padding-top: 27px; padding-bottom: 25px; }
+}
+
+/* Roster and detail panes must accommodate all six rarity names. */
+.heroes-page .roster { padding-bottom: 18px; }
+.heroes-page .roster-row { min-width: 0; }
+.heroes-page .roster-name strong { line-height: 1.05; overflow-wrap: anywhere; }
+.heroes-page .roster-name { min-width: 0; }
+.heroes-page .roster-head { margin-bottom: 4px; }
+.heroes-page .sheet-rarity { font-size: clamp(32px, 3.3vw, 45px); line-height: 1.05; overflow-wrap: anywhere; }
+.heroes-page .sheet-skin { margin-top: 6px; }
+.heroes-page .sheet-role { margin-top: 7px; }
+.heroes-page .sheet-actions { flex-wrap: wrap; }
+.heroes-page .sheet-actions .cta { flex: 1 1 140px; }
+.heroes-page .toggle { min-height: 44px; height: auto; padding-block: 8px; }
+.heroes-page .hero-sheet { overflow: visible; }
+.heroes-page .hero-sheet .rarity-card { overflow: hidden; }
+.heroes-page .heroes-empty { margin: 0 auto; }
+.summon-pending-packs { scroll-margin-top: 20px; }
+.summon-pending-pack .cta { flex-shrink: 0; }
+.summon-reveal-dialog .reveal-rarity { white-space: normal; text-align: center; min-height: 22px; }
+.game-wallet-close, .reveal-close { width: 40px; height: 40px; }
+.game-wallet-panel > .brand-wordmark { max-width: calc(100% - 40px); margin-bottom: 20px; }
+.game-wallet-name { min-width: 0; }
+.game-wallet-name small { text-wrap: pretty; }
+.game-wallet-list a, .game-wallet-list button { min-height: 76px; }
+
+/* The public page grows with connection errors and translated/longer copy. */
+.title-nav { gap: 24px; }
+.title-brand { flex-shrink: 0; line-height: 0; }
+.title-nav nav { min-width: 0; }
+.title-nav nav a { min-height: 44px; display: grid; align-items: center; }
+.title-network { flex-shrink: 0; }
+.title-hero, .title-hero:has(.launch-countdown) { height: auto; min-height: 850px; padding-block: 60px 110px; }
+.title-copy, .title-copy:has(.launch-countdown) { margin-top: 0; }
+.title-wallet { width: min(390px,100%); max-width: 390px; }
+.title-wallet .error-line { margin: 0; font: 13px/1.65 var(--font-ui); }
+.title-play.cta { min-height: 60px; height: auto; padding-block: 14px 17px; white-space: normal; line-height: 1.1; }
+.title-wallet .auth-toggle { min-height: 44px; margin-block: -7px; padding-block: 10px; }
+.title-section-heading h2, .field-guide-grid h3 { text-wrap: balance; line-height: 1.1; }
+.character-card { display: flex; flex-direction: column; }
+.character-card-copy { flex: 1; display: flex; flex-direction: column; }
+.character-card h3 { flex-wrap: wrap; gap: 8px; line-height: 1.1; }
+.character-card p { flex: 1; }
+.character-card-copy .page-eyebrow { min-height: 30px; }
+.character-weapon { margin-top: auto; }
+.title-footer { flex-wrap: wrap; }
+
+@media (min-width: 981px) {
+  .heroes-page .roster-row { grid-template-columns: 52px minmax(100px,1fr) repeat(3,42px) 90px minmax(100px,140px); }
+}
+@media (max-width: 1100px) {
+  .title-nav { gap: 18px; padding-inline: 4%; }
+  .title-nav .brand-wordmark { width: 190px; }
+  .title-nav nav { gap: 16px; }
+  .title-nav nav a { font-size: 10px; white-space: nowrap; }
+  .heroes-page .heroes-layout { grid-template-columns: minmax(0,1fr); }
+  .heroes-page .hero-sheet { min-height: 0; }
+  .summon-layout { grid-template-columns: minmax(0,1fr) minmax(330px, 460px); gap: 24px; }
+}
+@media (max-width: 850px) {
+  .title-nav { flex-wrap: wrap; height: auto; padding-block: 15px 10px; gap: 12px; }
+  .title-nav nav { order: 3; flex: 1 0 100%; justify-content: center; gap: clamp(14px,3vw,28px); }
+  .title-nav .title-network { margin-left: auto; }
+  .summon-layout { grid-template-columns: minmax(0,1fr); max-width: 620px; }
+  .summon-stage { height: 250px; }
+  .forge-layout { grid-template-columns: minmax(0,1fr); }
+  .forge-panel:last-child { min-width: 0; flex-wrap: wrap; }
+  .porter-panel { grid-template-columns: minmax(140px, 28%) minmax(0,1fr); gap: 22px; }
+  .page .page-modes { gap: 16px; }
+  .page-modes .mode-name { font-size: 27px; letter-spacing: .5px; }
+}
+@media (max-width: 700px) {
+  :root { --page-gutter: 18px; --panel-padding: 22px; }
+  .page, .page.heroes-page { padding: 24px var(--page-gutter) 28px; }
+  .app[data-screen="panel"] > .game-dock, .app[data-screen="lobby"] > .game-dock { justify-content: center; gap: 3px; padding: 8px 5px max(10px,env(safe-area-inset-bottom)); }
+  .page-heading { gap: 16px; margin-bottom: 24px; padding-bottom: 22px; flex-wrap: wrap; }
+  .page-heading h2 { font-size: clamp(30px,8.4vw,36px); }
+  .page-heading p { font-size: 13px; }
+  .app:not([data-screen="hunt"]) .topbar { height: auto; min-height: 72px; padding-block: 12px; flex-wrap: wrap; row-gap: 10px; }
+  .app:not([data-screen="hunt"]) .topbar-back { flex: 1 1 130px; }
+  .app[data-screen="panel"] .topbar-right { margin-left: auto; }
+  .app[data-screen="panel"] .topbar-title { white-space: normal; font-size: clamp(22px,6.5vw,28px); overflow: visible; line-height: 1.05; overflow-wrap: anywhere; }
+  .player { flex: 1; min-width: 0; }
+  .topbar-right { min-width: 0; }
+  .mhdg-value { font-size: clamp(21px,5.6vw,25px); }
+  .page .page-modes { flex-direction: column; width: min(420px,100%); gap: 24px; }
+  .page-modes .mode { flex: none; width: 100%; max-width: none; }
+  .page-modes .mode-art { height: 235px; }
+  .page-modes .mode-name { font-size: 32px; }
+  .page-modes .shop-description { min-height: 0; }
+  .chest-rewards, .porter-panel, .market-preview { grid-template-columns: minmax(0,1fr); gap: 24px; }
+  .chest-reward { min-height: 0; }
+  .chest-reward .page-panel-title { font-size: 34px; }
+  .chest-reward > .cta, .chest-reward > .chest-opens { margin-top: 0; }
+  .porter-art { min-height: 170px; }
+  .porter-buy { grid-template-columns: minmax(0,1fr); }
+  .porter-panel { gap: 14px; }
+  .market-preview { padding: var(--panel-padding); }
+  .market-preview h3 { font-size: 36px; }
+  .market-preview-art { min-height: 230px; }
+  .forge-panel .roster-meta { flex-basis: 140px; }
+  .forge-panel .roster-row { padding: 14px 12px; gap: 12px; }
+  .forge-panel .roster-row > button { min-width: 88px; font-size: 22px; }
+  .settings-list .setting { min-height: 76px; gap: 14px; }
+  .settings-list .setting > strong { font-size: 12px; max-width: 68%; }
+  .settings-list .setting input[type="range"] { flex-basis: 140px; max-width: 48%; }
+  .heroes-page .roster { min-height: 0; padding: 16px 12px; }
+  .heroes-page .roster-tools { gap: 12px; }
+  .heroes-page .toggles { gap: 6px; }
+  .heroes-page .toggle { padding-inline: 10px; font-size: 22px; }
+  .heroes-page .roster-row { grid-template-columns: 40px minmax(70px,1fr) repeat(3,30px); gap: 4px; padding-right: 7px; }
+  .heroes-page .roster-name strong { font-size: 21px; }
+  .heroes-page .hero-sheet { min-height: 0; padding: 22px 18px; }
+  .heroes-page .sheet-head { gap: 14px; }
+  .heroes-page .sheet-rarity { font-size: 34px; }
+  .heroes-page .sheet-stats { gap: 8px; }
+  .heroes-page .sheet-stat strong { font-size: 30px; }
+  .summon-pending-pack .cta { flex: 1 0 100%; }
+  .title-nav nav { display: flex; }
+  .title-nav { padding-inline: 20px; }
+  .title-nav .brand-wordmark { width: min(190px,44vw); }
+  .title-hero, .title-hero:has(.launch-countdown) { min-height: 990px; padding-block: 36px 190px; }
+  .title-copy, .title-copy:has(.launch-countdown) { min-width: 0; max-width: calc(100% - 44px); margin: 0 22px; }
+  .title-copy:has(.launch-countdown) h1 { font-size: clamp(59px,16vw,80px); }
+  .title-kicker { font-size: 10px; letter-spacing: .5px; line-height: 1.6; }
+  .title-keyart { height: 50%; }
+  .title-location { bottom: 64px; left: 22px; }
+  .title-scroll { bottom: 22px; }
+  .title-world-strip { flex-wrap: wrap; }
+  .title-section { padding-inline: 22px; }
+  .character-card-copy .page-eyebrow { min-height: 0; }
+  .title-footer { gap: 20px; }
+  .title-footer .brand-wordmark { width: 150px; }
+  .title-footer small { flex: 1 1 140px; max-width: none; }
+}
+@media (max-width: 380px) {
+  :root { --page-gutter: 14px; --panel-padding: 18px; }
+  .app:not([data-screen="hunt"]) .topbar-back { flex-basis: 100%; }
+  .app[data-screen="lobby"] .player { flex: 1 1 100%; }
+  .app[data-screen="lobby"] .topbar-right { margin-left: auto; }
+  .heroes-page .toggles { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); width: 100%; }
+  .heroes-page .toggle { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px; padding-inline: 5px; font-size: 20px; }
+  .heroes-page .toggles:first-child .toggle { flex-direction: column; min-height: 56px; }
+  .heroes-page .roster-row { grid-template-columns: 32px minmax(58px,1fr) repeat(3,26px); gap: 3px; }
+  .heroes-page .roster-face { width: 32px; overflow: hidden; }
+  .heroes-page .roster-stat { font-size: 22px; }
+  .heroes-page .sheet-head { grid-template-columns: minmax(0,1fr); justify-items: center; }
+  .heroes-page .sheet-name { justify-items: center; text-align: center; }
+  .invite-code-box .cta-alt { width: 100%; }
+  .game-wallet-panel { padding-inline: 16px; }
+  .game-wallet-list a, .game-wallet-list button { gap: 9px; padding-inline: 10px; }
+  .game-wallet-list img, .backpack-wallet-icon { width: 34px; height: 34px; }
+  .game-wallet-action { font-size: 10px; }
+  .title-nav nav { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 0 14px; text-align: center; }
+  .title-nav nav a { font-size: 9px; }
+  .title-nav .title-network { font-size: 9px; }
+  .title-footer .title-brand { width: 100%; }
+}
+@media (max-width: 360px) {
+  .lobby-modes { grid-template-columns: minmax(0,1fr); width: calc(100% - 40px); }
+  .lobby-modes .mode-art { height: 220px; }
+  .lobby-modes .card-art-party { transform: scale(.9); }
+  .lobby-modes .mode-art-caption { font-size: 9px; }
+  .lobby-status { flex-wrap: wrap; padding-inline: 16px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .title-screen { scroll-behavior: auto; }
+  .game-sprite, .porter-loop, .summon-rays, .summon-deck, .art-gloss, .title-embers i, .state-rune { animation: none; }
+  .mode, .character-card, .cta, .game-dock-btn { transition: none; }
+  .mode:not(.disabled):hover, .mode:not(.disabled):focus-visible, .character-card:hover, .game-dock-btn:hover { transform: none; }
+}
+
+/* Keep the selected hero and its actions in view while the roster scrolls. */
+.heroes-page .sheet-content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+.heroes-page .hero-sheet .sheet-actions {
+  flex: none;
+  margin-top: 0;
+  padding-top: 16px;
+  border-top: 1px solid #3b5266;
+}
+@media (min-width: 1101px) {
+  .page.heroes-page:has(> .heroes-layout) {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    padding-bottom: 24px;
+  }
+  .heroes-page > .page-heading { flex: none; width: 100%; }
+  .heroes-page > .summon-pending-packs {
+    flex: none;
+    width: 100%;
+    max-height: 160px;
+    overflow: auto;
+  }
+  .heroes-page .heroes-layout {
+    flex: 1;
+    min-height: 0;
+    grid-template-columns: minmax(0,1fr) clamp(340px,30vw,410px);
+    grid-template-rows: minmax(0,1fr);
+    align-items: stretch;
+  }
+  .heroes-page .roster, .heroes-page .hero-sheet {
+    min-height: 0;
+    max-height: 100%;
+    overflow: hidden;
+  }
+  .heroes-page .roster-tools, .heroes-page .roster-actions { flex: none; }
+  .heroes-page .roster-list {
+    flex: 1;
+    min-height: 0;
+    max-height: none;
+    overflow-y: auto;
+    overscroll-behavior-y: contain;
+    scrollbar-gutter: stable;
+  }
+  .heroes-page .roster-head { position: sticky; top: 0; z-index: 1; }
+  .heroes-page .hero-sheet { gap: 0; padding: 20px; }
+  .heroes-page .sheet-content {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior-y: contain;
+    scrollbar-gutter: stable;
+    padding-bottom: 16px;
+  }
+}
+@media (min-width: 1101px) and (max-height: 750px) {
+  .page.heroes-page:has(> .heroes-layout) { padding-top: 18px; padding-bottom: 18px; }
+  .heroes-page > .page-heading { padding-bottom: 16px; margin-bottom: 18px; }
+  .heroes-page > .page-heading h2 { font-size: 34px; margin-block: 7px 8px; }
+  .heroes-page > .page-heading p { font-size: 13px; }
+  .heroes-page .roster-tools { gap: 8px; }
+  .heroes-page .toggle { font-size: 23px; padding-inline: 10px; }
+  .heroes-page .hero-sheet { padding: 16px; }
+}
+@media (max-width: 1100px) {
+  .heroes-page .roster-list { max-height: min(42dvh,440px); overscroll-behavior-y: contain; }
+}
+
+/* Fusion is an upcoming mode: show the art without suggesting a playable action. */
+.lobby-modes { grid-template-columns: repeat(5,minmax(0,1fr)); padding-bottom: 64px; }
+.mode-fusion { --glow: #9ee4d7; --glow-deep: #548d83; }
+.mode-fusion.disabled { cursor: default; }
+.art-fusion { background: radial-gradient(ellipse at 50% 52%,#72815438,#111d2a 74%); }
+.art-fusion-image {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%,-56%);
+  width: 94%;
+  height: 80%;
+  max-width: 250px;
+  object-fit: contain;
+  image-rendering: pixelated;
+}
+@media (min-width: 701px) and (max-width: 1200px) {
+  .lobby-modes { grid-template-columns: repeat(6,minmax(0,1fr)); max-width: 960px; gap: 24px; padding-bottom: 28px; }
+  .lobby-status { position: relative; inset: auto; justify-content: center; padding: 0 16px 24px; }
+  .lobby-modes > .mode { grid-column: span 2; }
+  .lobby-modes > .mode:nth-child(4) { grid-column: 2 / span 2; }
+  .lobby-modes > .mode:nth-child(5) { grid-column: 4 / span 2; }
+}
+@media (max-width: 700px) {
+  .screen-lobby { padding-bottom: 0; }
+  .lobby-modes { grid-template-columns: repeat(2,minmax(0,1fr)); padding-bottom: 25px; }
+  .lobby-status { padding-bottom: 24px; }
+  .lobby-modes > .mode:last-child { grid-column: 1 / -1; width: calc((100% - 16px) / 2); justify-self: center; }
+  .art-fusion-image { height: 76%; }
+}
+@media (max-width: 360px) {
+  .lobby-modes { grid-template-columns: minmax(0,1fr); }
+  .lobby-modes > .mode:last-child { grid-column: auto; width: 100%; }
+}
+
+
+/* Upcoming modes share a muted card and one readable, full-width status ribbon. */
+.mode-coming-soon.disabled { cursor: default; }
+.mode-coming-soon .mode-card {
+  filter: grayscale(1);
+  background: #1b232c;
+  box-shadow: inset 0 0 0 2px #52606c,inset 0 0 0 5px #11171e;
+}
+.mode-coming-soon .mode-art { background: radial-gradient(ellipse at center,#5d666c33,#1a222b 75%); }
+.mode-coming-soon.disabled .mode-art > :not(.coming-soon-banner) { filter: none; opacity: .52; }
+.mode-coming-soon.disabled .mode-name {
+  color: #b8bfc7;
+  background: #242d36;
+  box-shadow: inset 0 2px #52606c,inset 0 -4px #65717c;
+}
+.mode-coming-soon .coming-soon-banner {
+  position: absolute;
+  left: 6px;
+  right: 6px;
+  bottom: 16px;
+  z-index: 3;
+  display: grid;
+  place-items: center;
+  min-height: 44px;
+  padding: 9px 6px 11px;
+  border: 1px solid #9aa5ae;
+  background: #242c35f5;
+  box-shadow: 0 3px 0 #0b1119;
+  color: #eef0f2;
+  font: 400 clamp(22px,2vw,30px)/1 var(--font-display);
+  letter-spacing: 1px;
+  text-align: center;
+}
+@media (max-width: 700px) {
+  .mode-coming-soon .coming-soon-banner { min-height: 38px; bottom: 12px; font-size: 22px; letter-spacing: .5px; }
+}
+.mode-coming-soon.disabled .mode-art > .coming-soon-banner { opacity: 1; filter: none; }
+
+
+/* Tight icon viewports use the artwork itself, rather than transparent PNG margins. */
+.game-dock-btn .game-dock-icon {
+  display: block;
+  width: calc(100% - 6px);
+  height: calc(100% - 6px);
+  overflow: hidden;
+  pointer-events: none;
+}
+.game-dock-icon image { image-rendering: pixelated; }
+
+/* Rendered arena: detailed materials retain their native sampling. */
+.dungeon-host canvas { image-rendering: auto; }
+.screen-hunt .map-frame { background: radial-gradient(ellipse at center, #20201d, #080c11 78%); }
+.screen-hunt .hero-sidebar-panel { background: linear-gradient(155deg, #24272c, #11171f 55%); border: 1px solid #766245; border-top: 2px solid #d8b778; box-shadow: inset 0 0 0 3px #0b1017, -10px 0 36px #0008; }
+
+.screen-hunt .hero-party-stamina { height: 5px; border: 0; border-radius: 3px; overflow: hidden; background: #060c12; box-shadow: 0 0 0 1px #ffffff0c; }
+.screen-hunt .hero-party-stamina > span { background: linear-gradient(90deg, #519f70, #b1edab); box-shadow: 0 0 7px #87db8b50; }
+.screen-hunt .hero-party-action { border-radius: 3px; box-shadow: inset 0 1px #ffffff16, 0 2px 5px #0004; }
+.screen-hunt .hero-sidebar-heading h2 { color: #f2d9a3; }
+.screen-hunt .hero-sidebar-handle { border-color: #766245; background: #1a232b; color: #edd39f; }
+@media (max-width: 600px) {
+}
+
+/* Keep the oblique arena on one dark backdrop without a tinted canvas rectangle. */
+.screen-hunt, .screen-hunt .map-frame { background: #080b0f !important; }
+.dungeon-host canvas { filter: contrast(1.06) saturate(1.09); }
+
+
+
+/* Dungeon HUD: clear progress, matched money cards and compact utility buttons. */
+.app[data-screen="hunt"] .topbar { gap: 20px; padding-inline: 22px; background: linear-gradient(180deg,#1b2631,#101922); box-shadow: inset 0 -1px #46554c,0 3px #05090e; }
+.app[data-screen="hunt"] .topbar-right { flex-shrink: 0; gap: 8px; }
+.app[data-screen="hunt"] .hunting-rewards-chip, .app[data-screen="hunt"] .hunt-balance-chip { height: 54px; gap: 9px; padding: 7px 12px; border: 1px solid #3d5048; background: linear-gradient(#202e2c,#142321); box-shadow: inset 0 1px #ffffff07,0 2px #080d13; }
+.app[data-screen="hunt"] .hunt-balance-chip { border-color: #4d4a3d; background: linear-gradient(#292b29,#1c2227); }
+.app[data-screen="hunt"] .hunting-rewards-chip:hover, .app[data-screen="hunt"] .hunt-balance-chip:hover { border-color: #b79b63; background: #28362f; }
+.app[data-screen="hunt"] .hunting-rewards-chip .icon-coin, .app[data-screen="hunt"] .hunt-balance-chip .icon-coin { width: 18px; height: 18px; }
+.hunt-balance-copy { display: grid; gap: 4px; }
+.app[data-screen="hunt"] .hunt-balance-copy > small, .app[data-screen="hunt"] .hunting-rewards-copy > small { display: block; color: #a6b6ae; font: 8px/1.2 var(--font-ui); letter-spacing: .8px; }
+.app[data-screen="hunt"] .hunt-balance-copy > strong, .app[data-screen="hunt"] .hunting-rewards-copy > strong { color: #ffe0a0; font: 400 27px/1 var(--font-display); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.app[data-screen="hunt"] .hunt-balance-copy > strong > span, .app[data-screen="hunt"] .hunting-rewards-copy > strong > span { color: #a9b7b7; font: 7px var(--font-ui); }
+.app[data-screen="hunt"] .top-btn { width: 42px; height: 48px; border: 1px solid #3c4b54; background: #17222d; box-shadow: inset 0 1px #ffffff06,0 2px #080d13; }
+@media (max-width: 1050px) and (min-width: 701px) {
+ .app[data-screen="hunt"] .topbar { gap: 10px; padding-inline: 14px; }
+ .app[data-screen="hunt"] .hunting-rewards-chip, .app[data-screen="hunt"] .hunt-balance-chip { padding-inline: 8px; gap: 6px; }
+ .app[data-screen="hunt"] .hunt-balance-copy > strong, .app[data-screen="hunt"] .hunting-rewards-copy > strong { font-size: 23px; }
+ .app[data-screen="hunt"] .hunt-balance-copy > strong > span, .app[data-screen="hunt"] .hunting-rewards-copy > strong > span { display: none; }
+}
+@media (max-width: 700px) {
+ .app[data-screen="hunt"] .topbar { gap: 9px; padding-inline: 12px; }
+ .app[data-screen="hunt"] .topbar-right { width: 100%; display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr) 32px 32px; gap: 5px; }
+ .app[data-screen="hunt"] .hunting-rewards-chip, .app[data-screen="hunt"] .hunt-balance-chip { height: 48px; padding-inline: 6px; gap: 4px; min-width: 0; }
+ .app[data-screen="hunt"] .hunt-balance-copy > strong, .app[data-screen="hunt"] .hunting-rewards-copy > strong { font-size: clamp(16px,4vw,22px); }
+ .app[data-screen="hunt"] .hunt-balance-copy > strong > span, .app[data-screen="hunt"] .hunting-rewards-copy > strong > span { display: none; }
+ .app[data-screen="hunt"] .hunt-balance-copy > small, .app[data-screen="hunt"] .hunting-rewards-copy > small { font-size: 7px; letter-spacing: .2px; }
+ .app[data-screen="hunt"] .hunting-rewards-chip .icon-coin, .app[data-screen="hunt"] .hunt-balance-chip .icon-coin { display: none; }
+ .app[data-screen="hunt"] .topbar-right .top-btn { width: 32px; height: 44px; }
+ .app[data-screen="hunt"] .topbar-right .chest-btn { display: inline-flex; }
+}
+
+/* Lobby community controls await their official destinations. */
+.topbar-community { display: flex; align-items: center; gap: 9px; flex: none; }
+.topbar-community .top-btn { display: inline-flex; align-items: center; justify-content: center; }
+.topbar-community .top-btn:disabled { opacity: 1; cursor: default; }
+.topbar-community .discord-btn { width: auto; min-width: 104px; padding-inline: 13px; font: 24px/1 var(--font-display); white-space: nowrap; height: 46px; color: #e7eaff; border: 1px solid #7982e3; background: linear-gradient(145deg,#505dc0,#303c83); box-shadow: inset 0 2px #ffffff17,inset 0 -4px #222b60,0 2px #080e17; }
+.discord-btn svg { display: block; width: 27px; height: 23px; }
+.topbar-community .token-buy-btn { width: auto; height: 46px; padding: 0 13px; gap: 9px; border: 1px solid #c6a460; background: linear-gradient(145deg,#57472b,#302b21); box-shadow: inset 0 2px #ffe8ae16,inset 0 -4px #211b15,0 2px #080e17; color: #ffe2a3; font: 24px/1 var(--font-display); white-space: nowrap; }
+.token-buy-btn .icon-coin { width: 20px; height: 20px; }
+.token-buy-btn .token-buy-arrow { color: #c8b07e; font: 15px var(--font-ui); }
+@media (max-width: 950px) and (min-width: 701px) {
+ .app[data-screen="lobby"] .invite-label { display: none; }
+ .app[data-screen="lobby"] .invite-btn { width: 46px; padding: 0; }
+ .topbar-community { gap: 7px; }
+ .topbar-community .token-buy-btn { padding-inline: 10px; gap: 7px; font-size: 22px; }
+ .token-buy-btn .token-buy-arrow { display: none; }
+}
+@media (max-width: 700px) {
+ .app[data-screen="lobby"] .topbar-right { flex-wrap: wrap; justify-content: flex-end; gap: 6px; }
+ .topbar-community { gap: 6px; }
+ .topbar-community .discord-btn { width: auto; min-width: 86px; padding-inline: 9px; font-size: 21px; height: 40px; }
+ .discord-btn svg { width: 24px; height: 21px; }
+ .topbar-community .token-buy-btn { height: 40px; padding-inline: 9px; gap: 6px; font-size: 21px; }
+ .token-buy-btn .icon-coin { width: 17px; height: 17px; }
+ .token-buy-btn .token-buy-arrow { display: none; }
+}
+@media (max-width: 380px) {
+ .topbar-community .token-buy-btn { padding-inline: 7px; gap: 4px; font-size: 19px; }
+ .token-buy-btn .icon-coin { width: 14px; height: 14px; }
+}
+
+/* Share complete referral URLs; the internal identifier stays out of the interface. */
+.invite-link-label { display: block; color: #90b9bb; font: 10px/1.5 var(--font-ui); letter-spacing: 1.3px; margin-top: 26px; }
+.invite-link-box { display: flex; align-items: stretch; gap: 12px; padding: 13px; margin-top: 10px; min-width: 0; border: 1px solid #4c727a; background: #0f1c2b; box-shadow: inset 0 2px #8bb6ae15; }
+.invite-link-box input { min-width: 0; width: 100%; height: 48px; color: #addbd3; font: 14px var(--font-ui); letter-spacing: 0; }
+.invite-link-box button { flex: none; min-width: 128px; font: 24px var(--font-display); }
+.invite-copy-status { display: block; min-height: 20px; margin-top: 10px; font: 11px/1.6 var(--font-ui); color: #90aaa9; }
+.invite-link-join.invite-join-row { margin-top: 10px; grid-template-columns: minmax(0,1fr) auto; }
+.invite-link-join.invite-join-row .cta { min-width: 150px; font-size: 25px; padding-inline: 17px; }
+.invite-link-join input { font-size: 13px; }
+.invite-success { padding: 13px 16px; border: 1px solid #5caa7866; background: #244b372f; color: #a6d8b6; font: 13px/1.6 var(--font-ui); }
+@media(max-width:600px) {
+ .invite-link-box { flex-direction: column; gap: 10px; padding: 11px; }
+ .invite-link-box button { min-height: 45px; width: 100%; }
+ .invite-link-box input { font-size: 12px; }
+ .invite-link-join.invite-join-row { grid-template-columns: minmax(0,1fr); }
+ .invite-link-join.invite-join-row .cta { width: 100%; }
+}
+
+.topbar .demo-session-badge{width:auto;min-width:64px;flex-shrink:0;gap:6px;padding:0 9px;font-size:17px;white-space:nowrap;color:#f2ca76;border-color:#8c7144;background:#322b1d;}

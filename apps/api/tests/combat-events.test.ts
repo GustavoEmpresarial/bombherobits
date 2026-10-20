@@ -1,0 +1,13 @@
+import { test } from "node:test";
+import assert from "node:assert/strict";
+import { CombatEventCursor } from "../../web/src/game/combat-events.js";
+import type { DungeonCombatEvent, DungeonSnapshot } from "@herobits/shared";
+const at = (ms: number) => new Date(ms).toISOString();
+const hit = (sequence: number, time = 10000): DungeonCombatEvent => ({ sequence, heroId: "hero", heroClass: "WARRIOR", targetId: "crate", targetType: "SLIME", fromX: 2, fromY: 1, x: 3, y: 1, damage: 8, destroyed: false, reward: 0, at: at(time) });
+const state = (sequence: number, events: DungeonCombatEvent[], time = 10000, runId = "run"): DungeonSnapshot => ({runId, wave:1, waveTotal:40, openedCrates:0, combatSequence:sequence, combatEvents:events, status:"ACTIVE",gold:0,chest:0,working:1,maxWorking:15,heroes:[],targets:[],lastTickAt:at(time)});
+test("entering the arena does not replay previous combat", () => { const cursor=new CombatEventCursor();assert.deepEqual(cursor.consume(state(3,[hit(3)])),[]); });
+test("new hits play once even when snapshots are repeated", () => { const cursor=new CombatEventCursor();cursor.consume(state(0,[]));assert.deepEqual(cursor.consume(state(1,[hit(1)])).map(e=>e.sequence),[1]);assert.deepEqual(cursor.consume(state(1,[hit(1)])),[]); });
+test("a late older response cannot make the next snapshot replay combat", () => { const cursor=new CombatEventCursor();cursor.consume(state(0,[]));cursor.consume(state(2,[hit(1),hit(2)]));assert.deepEqual(cursor.consume(state(1,[hit(1)])),[]);assert.deepEqual(cursor.consume(state(2,[hit(1),hit(2)])),[]); });
+test("offline history is skipped while fresh hits still play", () => { const cursor=new CombatEventCursor();cursor.consume(state(0,[]));assert.deepEqual(cursor.consume(state(3,[hit(1,1000),hit(2,9000),hit(3,10000)])).map(e=>e.sequence),[2,3]); });
+test("a different run starts a new cursor without replaying its history", () => { const cursor=new CombatEventCursor();cursor.consume(state(8,[hit(8)]));assert.deepEqual(cursor.consume(state(1,[hit(1)],10000,"another")),[]);assert.deepEqual(cursor.consume(state(2,[hit(2)],10000,"another")).map(e=>e.sequence),[2]); });
+test("a burst is capped so reconnects do not flood the scene with effects", () => { const cursor=new CombatEventCursor();cursor.consume(state(0,[]));const events=Array.from({length:64},(_,i)=>hit(i+1));const fresh=cursor.consume(state(64,events));assert.equal(fresh.length,32);assert.equal(fresh[0].sequence,33);assert.equal(fresh.at(-1)!.sequence,64); });

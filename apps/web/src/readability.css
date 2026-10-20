@@ -1,0 +1,124 @@
+/* Readable interface text; pixel lettering is reserved for display and game numbers. */
+:root { --reading-text: #c2d2dd; --reading-muted: #a4bacb; }
+.title-nav nav a { font: 600 12px/1.4 var(--font-ui); letter-spacing: .6px; color: #c0d0da; }
+.title-network { font: 600 11px/1.4 var(--font-ui); letter-spacing: .6px; color: #a4cec8; }
+.title-brand i { font: normal 9px/1.5 var(--font-ui); letter-spacing: 1.5px; color: #a0b7c7; }
+.title-kicker { font: 600 11px/1.5 var(--font-ui); letter-spacing: 1.4px; color: #b1d7db; }
+.title-copy > p { font: 400 15px/1.8 var(--font-ui); color: #c7d7e0; max-width: 520px; }
+.title-wallet .wallet-hint, .title-wallet .wallet-hint > span { font: 400 12px/1.7 var(--font-ui); color: #afc3d0; letter-spacing: 0; }
+.title-wallet .wallet-hint { font-weight: 600; }.title-wallet .wallet-hint > span { color: #9db5c7; }
+.title-scroll { font: 600 11px/1.5 var(--font-ui); letter-spacing: .8px; color: #b5cdd7; }
+.title-location > div { font: 600 10px/1.5 var(--font-ui); letter-spacing: 1px; }
+.title-location strong { font-size: 16px; letter-spacing: .6px; }
+.title-world-strip { font: 500 12px/1.6 var(--font-ui); letter-spacing: 1px; color: #b0c4d2; gap: 35px; }
+.page-eyebrow { font: 600 11px/1.5 var(--font-ui); letter-spacing: 1.3px; color: #99cbd0; }
+.title-section-heading > p { font: 400 15px/1.8 var(--font-ui); color: var(--reading-muted); }
+.character-card-top { font: 600 11px/1.5 var(--font-ui); letter-spacing: .6px; }
+.character-card-copy .page-eyebrow { font: 600 10px/1.5 var(--font-ui); letter-spacing: 1px; }
+.character-card h3 span { font: 600 10px/1.4 var(--font-ui); letter-spacing: .4px; }
+.character-card p { font: 400 14px/1.8 var(--font-ui); color: var(--reading-text); min-height: 78px; }
+.character-weapon { font: 500 12px/1.5 var(--font-ui); color: #ccdce3; }
+.field-guide-grid p { font: 400 14px/1.8 var(--font-ui); color: #afc4d2; }
+.guide-return { font: 600 12px/1.5 var(--font-ui); letter-spacing: .6px; }
+.title-footer > span:nth-child(2), .title-footer small { font: 500 11px/1.6 var(--font-ui); letter-spacing: .5px; color: #9fb6c7; }
+.battle-preview-bar { font: 600 11px/1.5 var(--font-ui); letter-spacing: .8px; }
+.battle-preview-bar > span:last-child { font-size: 10px; color: #acc3d2; }
+.battle-preview figcaption { font: 500 10px/1.6 var(--font-ui); letter-spacing: .5px; color: #9bb5c8; }
+.launch-countdown { width: min(390px,100%); padding: 16px 18px; }
+.launch-countdown-heading { font: 600 10px/1.5 var(--font-ui); letter-spacing: .7px; color: #cad6dd; }
+.launch-countdown-heading time { font: 600 10px/1.5 var(--font-ui); letter-spacing: .5px; }
+.launch-clock-unit strong { font-size: 44px; }.launch-clock-unit > span { font: 500 10px/1.5 var(--font-ui); color: #a7c0cf; letter-spacing: .5px; }
+.launch-countdown > p { font: 400 12px/1.6 var(--font-ui); color: #a7d8c5; }
+.title-hero:has(.launch-countdown) { min-height: 850px; }
+/* Crates are stationary destructible objects, not animated opponents. */
+.title-loot { border-top: 1px solid #3f5e7160; }
+.loot-grid { display: grid; grid-template-columns: repeat(5,minmax(0,1fr)); gap: 16px; }
+.loot-grid article { padding: 18px 14px 22px; background: #142333; border: 1px solid #405e72; text-align: center; }
+.loot-number { display: block; min-height: 32px; text-align: left; font: 600 10px/1.6 var(--font-ui); color: #a3bbcb; letter-spacing: .5px; }
+.loot-grid img { width: 100%; height: 145px; object-fit: contain; image-rendering: pixelated; filter: drop-shadow(0 7px 4px #0005); }
+.loot-grid h3 { font: 400 29px/1.15 var(--font-display); color: #eee3c9; margin: 16px 0 0; }
+.loot-sprite { display: block; flex: none; background-repeat: no-repeat; background-position: 0 0; image-rendering: pixelated; }
+.card-art-crates { position: absolute; inset: 0 -10px; display: flex; justify-content: center; align-items: center; padding-top: 25px; }
+.card-art-crates .loot-sprite { margin-inline: -12px; }.card-art-crates .loot-sprite:nth-child(2) { z-index: 1; margin-top: 6px; }
+.sprite-mob { background-size: calc(var(--s) * 2) var(--s); animation: none; }
+.page-heading p, .page-note, .page-panel-text, .invite-rules, .page-state p { font: 400 14px/1.75 var(--font-ui); color: #afc5d5; }
+.mode-description, .shop-description { font: 400 12px/1.6 var(--font-ui); color: #b5c9d8; }
+.mode-index, .mode-art-caption { font: 500 10px/1.5 var(--font-ui); letter-spacing: .5px; }
+.player-sub, .lobby-status { font: 500 10px/1.5 var(--font-ui); letter-spacing: .5px; color: #a7c5d1; }
+.game-wordmark + span { font: 500 11px/1.5 var(--font-ui); color: #b4cad8; letter-spacing: 1px; }
+.setting, .setting strong, .summon-total, .porter-reqs { font-family: var(--font-ui); font-size: 14px; line-height: 1.6; }
+.setting strong { color: #b5ccdc; }.invite-rules { line-height: 1.8; }.settings-list .setting { min-height: 80px; }
+.summon-buy .page-note { font: 400 13px/1.7 var(--font-ui); }.odds-row { font: 400 14px/1.6 var(--font-ui); min-height: 40px; }.odds-head { font-size: 12px; }.odds-name { font-size: 14px; }
+.forge-panel .roster-stats { font: 400 12px/1.7 var(--font-ui); color: #b5cbda; }.heroes-page .roster-name span { font: 400 12px/1.5 var(--font-ui); }.heroes-page .sheet-id,.heroes-page .sheet-role,.heroes-page .sheet-status { font: 400 12px/1.6 var(--font-ui); }.heroes-page .sheet-stat small { font: 500 10px/1.4 var(--font-ui); color: #b5c9d7; }
+.hunt-run-status .page-eyebrow { font-size: 10px; }.hunt-run-status > span:last-child { font: 400 12px/1.6 var(--font-ui); color: #afc7d6; }.hunt-rewards small { font: 500 10px/1.5 var(--font-ui); color: #b2c8d7; }.fab-count { font: 400 12px/1.5 var(--font-ui); }
+@media (max-width: 1000px) { .loot-grid { grid-template-columns: repeat(3,minmax(0,1fr)); }.loot-grid img { height: 150px; }.title-nav nav { gap: 17px; }.title-nav nav a { font-size: 11px; }.title-network { font-size: 10px; }.character-card p { min-height: 100px; }.title-world-strip { font-size: 11px; gap: 23px; } }
+@media (max-width: 600px) {
+  .title-nav { padding-inline: 20px; height: 86px; }.title-network { font-size: 10px; gap: 6px; }.title-brand i { font-size: 8px; letter-spacing: .7px; }
+  .title-copy:has(.launch-countdown) { margin-top: 30px; }.title-hero:has(.launch-countdown) { min-height: 1070px; height: 1070px; }.title-copy:has(.launch-countdown) h1 { font-size: clamp(59px,16vw,80px); }
+  .title-kicker { font-size: 10px; letter-spacing: .7px; }.title-copy > p { font-size: 14px; line-height: 1.8; }.title-wallet .wallet-hint,.title-wallet .wallet-hint > span { font-size: 11px; line-height: 1.7; }
+  .launch-countdown { width: min(100%,390px); padding: 15px 14px; }.launch-countdown-heading,.launch-countdown-heading time { font-size: 9px; letter-spacing: .4px; }.launch-clock-unit strong { font-size: 42px; }.launch-clock-unit > span { font-size: 9px; }.launch-countdown > p { font-size: 11px; }
+  .title-keyart { height: 49%; }.title-vignette { background: linear-gradient(#0b1420 0%,#0b1420 49%,#0b1420ab 65%,transparent 84%,#0b1420 100%); }
+  .title-location strong { font-size: 15px; }.title-location > div { font-size: 10px; }.title-scroll { font-size: 10px; }.title-world-strip { font-size: 10px; gap: 12px; letter-spacing: .2px; padding-block: 20px; }.title-world-strip b { font-size: 13px; }
+  .page-eyebrow { font-size: 10px; letter-spacing: .8px; }.title-section-heading > p { font-size: 14px; }.character-card-top { font-size: 11px; }.character-card-copy .page-eyebrow { font-size: 10px; }.character-card h3 span { font-size: 10px; }.character-card p { min-height: 0; font-size: 14px; }.character-weapon { font-size: 12px; }
+  .loot-grid { grid-template-columns: repeat(2,minmax(0,1fr)); gap: 12px; }.loot-grid article { padding: 14px 10px 18px; }.loot-number { font-size: 9px; min-height: 40px; }.loot-grid img { height: 120px; }.loot-grid h3 { font-size: 27px; }
+  .field-guide-grid p { font-size: 14px; }.guide-return { font-size: 11px; text-align: center; line-height: 1.7; }.title-footer small { font-size: 10px; line-height: 1.7; max-width: 200px; }.title-footer .title-brand { font-size: 26px; }
+  .battle-preview-bar { font-size: 10px; flex-wrap: wrap; padding: 12px; gap: 6px; }.battle-preview-bar > span:last-child { font-size: 9px; }.battle-preview figcaption { font-size: 10px; padding: 12px; letter-spacing: 0; }.battle-preview figcaption > span:last-child { max-width: 145px; }
+  .page-heading p,.page-note,.page-panel-text { font-size: 13px; }.page-heading h2 { font-size: 34px; }.mode-description,.shop-description { font-size: 11px; }.mode-index { font-size: 9px; }.mode-art-caption { font-size: 8px; letter-spacing: 0; }.card-art-crates { transform: scale(.8); }.card-art-crates .loot-sprite { margin-inline: -18px; }
+  .player-sub,.lobby-status { font-size: 9px; letter-spacing: 0; }.setting { font-size: 13px; }.setting strong { font-size: 11px; }.forge-panel .roster-stats { font-size: 11px; }.heroes-page .roster-name span { font-size: 11px; }.hunt-run-status .page-eyebrow { font-size: 9px; }.hunt-run-status > span:last-child { font-size: 11px; }.hunt-rewards small { font-size: 9px; }.fab-count { font-size: 11px; }
+}
+.battle-preview-image { aspect-ratio: 16 / 9; }.battle-preview-image img { object-fit: contain; }.battle-preview figcaption { flex-wrap: wrap; align-items: center; }.battle-preview figcaption a { font-weight: 600; color: #b6dfdc; padding: 5px 0; border-bottom: 1px solid #648b91; }
+/* Bomb Hero Bits: one consistent wordmark across the title screen and game. */
+.brand-wordmark { display: inline-flex; align-items: baseline; gap: .16em; white-space: nowrap; font: inherit; letter-spacing: inherit; }
+.brand-wordmark .brand-bomb { color: #f7bd61; }.brand-wordmark .brand-hero { color: #f3ecda; }.brand-wordmark .brand-bits { color: #83d8dc; }
+.title-brand { font-size: 34px; letter-spacing: 1px; }.title-footer .title-brand { font-size: 28px; }.game-wordmark { letter-spacing: 1.5px; }.loading-logo { font-size: clamp(44px,8vw,100px); letter-spacing: 1px; }
+@media (max-width: 1000px) { .title-brand { font-size: 29px; }.title-nav nav { gap: 14px; }.title-nav nav a { font-size: 10px; } }
+@media (max-width: 600px) { .title-brand { font-size: 27px; }.title-brand i { font-size: 7px; letter-spacing: .5px; }.title-footer { gap: 15px; }.title-footer .title-brand { font-size: 23px; }.title-footer small { max-width: 160px; font-size: 9px; }.game-wordmark { font-size: clamp(33px,10vw,46px); letter-spacing: 1px; } }
+
+/* Original game identity: consistent transparent lockup in every shell. */
+.brand-wordmark { display: inline-block; width: 230px; line-height: 0; vertical-align: middle; }
+.brand-wordmark img { display: block; width: 100%; height: auto; }
+.title-nav .title-brand i { display: none; }
+.title-footer .brand-wordmark { width: 190px; }
+/* Remove the text baseline space around the lobby's image logo. */
+.lobby-intro .game-wordmark { font-size: 0; line-height: 0; margin: 0 0 10px; }
+.lobby-intro > span { display: block; padding-inline: 16px; text-wrap: balance; }
+.game-wordmark .brand-wordmark { width: min(clamp(260px,30vw,400px),calc(100vw - 48px)); }
+@media (max-height: 750px) and (min-width: 701px) {
+  .game-wordmark .brand-wordmark { width: 300px; }
+}
+@media (max-width: 700px) {
+  .game-wordmark .brand-wordmark { width: min(320px,calc(100vw - 48px)); }
+}
+.loading-logo .brand-wordmark { width: min(580px,80vw); }
+
+/* Native dialog keeps keyboard focus inside the wallet selector. */
+.game-wallet-modal { width: min(470px,calc(100vw - 32px)); max-height: calc(100dvh - 32px); padding: 0; border: 1px solid #526c7f; border-radius: 18px; color: #f3ecda; background: #101c2b; box-shadow: 0 24px 100px #000a; overflow: auto; font: 15px/1.5 var(--font-ui); }
+.game-wallet-modal::backdrop { background: #040b16cc; backdrop-filter: blur(8px); }
+.game-wallet-panel { padding: 30px; position: relative; }
+.game-wallet-panel > .brand-wordmark { width: 235px; display: block; margin: 0 auto 24px; }
+.game-wallet-close { position: absolute; top: 10px; right: 12px; width: 34px; height: 34px; display: grid; place-items: center; background: #ffffff09; border: 1px solid #526c7f60; border-radius: 50%; color: #c4d4dd; font: 26px/1 var(--font-ui); cursor: pointer; }
+.game-wallet-eyebrow { margin: 0 0 7px; color: #f7bd61; font: 600 10px/1.6 var(--font-ui); letter-spacing: 1.8px; text-align: center; }
+.game-wallet-panel h2 { margin: 0; text-align: center; color: #fff8e9; font: 700 27px/1.3 var(--font-ui); letter-spacing: -.6px; }
+.game-wallet-description { margin: 10px 0 24px; color: #b3c7d4; font: 14px/1.6 var(--font-ui); text-align: center; }
+.game-wallet-list { list-style: none; display: grid; gap: 10px; padding: 0; margin: 0; }
+.game-wallet-list a,.game-wallet-list button { display: flex; align-items: center; gap: 13px; width: 100%; padding: 15px 13px; border: 1px solid #3e5366; border-radius: 10px; background: #1b2b3d; color: #f3ecda; text-decoration: none; text-align: left; cursor: pointer; font: 600 16px/1.3 var(--font-ui); transition: background .15s,border-color .15s; }
+.game-wallet-list li:first-child a,.game-wallet-list li:first-child button { border-color: #b18d506e; background: #26303a; }
+.game-wallet-list a:hover,.game-wallet-list button:hover { background: #2b3e50; border-color: #f7bd61; }
+.game-wallet-list a:focus-visible,.game-wallet-list button:focus-visible,.game-wallet-close:focus-visible { outline: 2px solid #72d9dd; outline-offset: 3px; }
+.game-wallet-list button:disabled { opacity: .6; cursor: wait; }
+.game-wallet-list img,.backpack-wallet-icon { width: 40px; height: 40px; border-radius: 10px; flex-shrink: 0; }
+.backpack-wallet-icon { display: grid; place-items: center; background: #e54341; color: white; }
+.backpack-wallet-icon svg { width: 32px; height: 32px; }
+.game-wallet-name { flex: 1; }
+.game-wallet-name small { display: block; margin-top: 5px; color: #a9becc; font: 11px/1.4 var(--font-ui); }
+.game-wallet-action { color: #f7bd61; white-space: nowrap; font: 600 12px/1.4 var(--font-ui); }
+.game-wallet-note { margin: 21px 0 17px; color: #a2b9c9; text-align: center; font: 12px/1.7 var(--font-ui); }
+.game-wallet-network { display: flex; align-items: center; justify-content: center; gap: 7px; border-top: 1px solid #3b51634d; padding-top: 17px; color: #a6c8d6; font: 600 10px/1.5 var(--font-ui); letter-spacing: 1.5px; }
+.game-wallet-network > span { width: 6px; height: 6px; background: #72d9dd; border-radius: 50%; box-shadow: 0 0 8px #72d9dd66; }
+.game-wallet-error { font: 13px/1.5 var(--font-ui); color: #ffb4a7; }
+@media (max-width: 600px) {
+  .title-nav .brand-wordmark { width: 190px; }.title-footer .brand-wordmark { width: 160px; }
+  .game-wallet-panel { padding: 28px 18px 22px; }.game-wallet-panel > .brand-wordmark { width: 220px; }
+  .game-wallet-list a,.game-wallet-list button { padding: 13px 10px; gap: 10px; }
+  .game-wallet-name small { font-size: 10px; }.game-wallet-action { font-size: 11px; }
+}

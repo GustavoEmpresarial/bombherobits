@@ -1,0 +1,5 @@
+# Invitations by shareable link
+
+The invites page displays a complete /auth?invite=… URL instead of a bare referral identifier. Copy Link copies that URL; the received-invitation form accepts complete URLs and retains compatibility with previously shared /invites?invite=… links. Login still preserves the invitation in session storage and redirects to /invites, where the full link is prefilled for explicit acceptance. Successful acceptance clears the pending value and invitation query to avoid reapplying it after reload. Identifiers remain internal to the existing referral API.
+
+Four new unit tests cover development/production origins, round trips, old invitation links, invalid and ambiguous URLs, and entry query capture. All 62 unit tests pass. Browser checks used the actual Layout, InvitesPage and useWorld with isolated API/auth fixtures and a separate fixture storage key. Verified the copy success state, rejection of a bare code, a failed invitation followed by a successful retry, prefilled invitation acceptance, cleared fields after success, and the 375px layout. No real referrals or account rewards were changed.

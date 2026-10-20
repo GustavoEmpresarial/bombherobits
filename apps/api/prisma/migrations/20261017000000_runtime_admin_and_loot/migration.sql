@@ -1,0 +1,9 @@
+ALTER TABLE "DungeonTarget" ADD COLUMN "kind" TEXT NOT NULL DEFAULT 'wooden-crate', ADD COLUMN "reward" DECIMAL(18,2) NOT NULL DEFAULT 50;
+UPDATE "DungeonTarget" SET "kind" = CASE WHEN "type" = 'BLOCK' THEN CASE WHEN get_byte(decode(md5("id"),'hex'),0)%100 < 40 THEN 'ancient-vault' WHEN get_byte(decode(md5("id"),'hex'),0)%100 < 75 THEN 'gold-chest' ELSE 'crystal-chest' END ELSE CASE WHEN get_byte(decode(md5("id"),'hex'),0)%100 < 50 THEN 'wooden-crate' WHEN get_byte(decode(md5("id"),'hex'),0)%100 < 80 THEN 'iron-crate' WHEN get_byte(decode(md5("id"),'hex'),0)%100 < 95 THEN 'gold-chest' ELSE 'crystal-chest' END END;
+UPDATE "DungeonTarget" AS t SET "hp" = greatest(1,round(t."hp"::numeric/t."maxHp"*s.hp)::integer), "maxHp" = s.hp, "reward"=s.reward FROM (VALUES ('wooden-crate',80,50),('iron-crate',250,125),('gold-chest',500,250),('crystal-chest',750,375),('ancient-vault',1000,500)) AS s(kind,hp,reward) WHERE t."kind"=s.kind;
+CREATE TABLE "RuntimeSettings" ("id" TEXT PRIMARY KEY DEFAULT 'active', "data" JSONB NOT NULL, "revision" INTEGER NOT NULL DEFAULT 1, "updatedAt" TIMESTAMP(3) NOT NULL);
+CREATE TABLE "AdminUser" ("id" TEXT PRIMARY KEY,"username" TEXT NOT NULL,"passwordHash" TEXT NOT NULL,"disabled" BOOLEAN NOT NULL DEFAULT false,"createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP);
+CREATE UNIQUE INDEX "AdminUser_username_key" ON "AdminUser"("username");
+CREATE TABLE "AdminSession" ("id" TEXT PRIMARY KEY,"tokenHash" TEXT NOT NULL,"adminId" TEXT NOT NULL REFERENCES "AdminUser"("id") ON DELETE CASCADE,"expiresAt" TIMESTAMP(3) NOT NULL,"createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP);
+CREATE UNIQUE INDEX "AdminSession_tokenHash_key" ON "AdminSession"("tokenHash");
+CREATE TABLE "AdminChange" ("id" TEXT PRIMARY KEY,"adminId" TEXT NOT NULL REFERENCES "AdminUser"("id"),"section" TEXT NOT NULL,"before" JSONB NOT NULL,"after" JSONB NOT NULL,"revision" INTEGER NOT NULL,"createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP);

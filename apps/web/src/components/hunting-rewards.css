@@ -1,0 +1,24 @@
+.hunting-rewards-chip { display: flex; align-items: center; gap: 9px; height: 46px; padding: 5px 14px; background: #142b31; box-shadow: inset 0 0 0 2px #3d6670, inset 0 -4px #0a1b24; white-space: nowrap; }
+.hunting-rewards-chip:hover { background: #1f3a40; }
+.hunting-rewards-chip .icon-coin { width: 20px; height: 20px; flex-shrink: 0; }
+.hunting-rewards-copy { display: flex; flex-direction: column; gap: 2px; }
+.hunting-rewards-copy > small { color: #a1c9c9; font: 9px/1.2 var(--font-ui); letter-spacing: .6px; }
+.hunting-rewards-copy > strong { color: #f3ce8c; font: 400 27px/1 var(--font-display); font-variant-numeric: tabular-nums; }
+.hunting-rewards-copy > strong > span { color: #a2bdc4; font: 8px var(--font-pixel); }
+@media (max-width: 700px) {
+  .hunting-rewards-chip { height: 40px; padding: 5px 8px; gap: 6px; }
+  .hunting-rewards-chip .icon-coin { width: 15px; height: 15px; }
+  .hunting-rewards-copy > small { font-size: 8px; letter-spacing: .2px; }
+  .hunting-rewards-copy > strong { font-size: 24px; }
+  .hunting-rewards-copy > strong > span { font-size: 7px; }
+}
+@media (max-width: 380px) {
+  .app[data-screen="hunt"] .topbar { padding-inline: 10px; gap: 6px; }
+  .app[data-screen="hunt"] .topbar-right { gap: 5px; }
+  .app[data-screen="hunt"] .mhdg-chip { padding-inline: 6px; gap: 4px; }
+  .app[data-screen="hunt"] .mhdg-value { font-size: 22px; }
+  .app[data-screen="hunt"] .mhdg-chip .icon-coin { width: 14px; height: 14px; }
+  .hunting-rewards-chip { padding-inline: 6px; gap: 4px; }
+  .hunting-rewards-copy > small { font-size: 7px; }
+  .hunting-rewards-copy > strong { font-size: 22px; }
+}

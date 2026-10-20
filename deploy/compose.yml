@@ -1,0 +1,51 @@
+name: herobits
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: herobits
+      POSTGRES_USER: herobits
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD required}
+    volumes:
+      - postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U herobits -d herobits"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    networks: [internal]
+  api:
+    image: herobits-api:${RELEASE_TAG:-current}
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+      target: api
+    restart: unless-stopped
+    env_file: /opt/herobits/shared/.env
+    environment:
+      NODE_ENV: production
+      API_PORT: 3001
+      TRUST_PROXY: "true"
+    depends_on:
+      db:
+        condition: service_healthy
+    networks: [internal]
+  web:
+    image: herobits-web:${RELEASE_TAG:-current}
+    container_name: herobits-web
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+      target: web
+    restart: unless-stopped
+    depends_on: [api]
+    networks: [internal, edge]
+networks:
+  internal:
+    internal: true
+  edge:
+    external: true
+    name: blockminer-dev_default
+volumes:
+  postgres:

@@ -1,0 +1,1 @@
+ALTER TABLE "DungeonRun" ALTER COLUMN "waveTotal" SET DEFAULT 60;
