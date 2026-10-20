@@ -1,0 +1,10 @@
+[Unit]
+Description=Issue and activate HTTPS for bombherobits.pro after DNS propagation
+Wants=network-online.target
+After=network-online.target docker.service
+
+[Service]
+Type=oneshot
+ExecStart=/opt/herobits/shared/ensure-domain-https.sh
+TimeoutStartSec=300
+UMask=0077
