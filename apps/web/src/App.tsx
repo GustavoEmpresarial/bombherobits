@@ -1,6 +1,5 @@
 import { BrandWordmark } from "./components/BrandWordmark";
-import { lazy, Suspense, useEffect, useState } from "react";
-import { api } from "./lib/api";
+import { lazy, Suspense } from "react";
 import { PageState } from "./components/Page";
 import { Navigate, Route, Routes } from "react-router-dom";
 import { IS_DEMO, useAuth } from "./state/AuthContext";
@@ -14,22 +13,20 @@ import { SummonPage } from "./pages/SummonPage";
 import { BlacksmithPage } from "./pages/BlacksmithPage";
 import { PorterPage } from "./pages/PorterPage";
 import { MarketPage } from "./pages/MarketPage";
+import { FusionPage } from "./pages/FusionPage";
+import { RankingPage } from "./pages/RankingPage";
+import { ArmoryPage } from "./pages/ArmoryPage";
+import { ScrapShopPage } from "./pages/ScrapShopPage";
+import { MailPage } from "./pages/MailPage";
+import { StakePage } from "./pages/StakePage";
 import { InvitesPage } from "./pages/InvitesPage";
 import { ChestPage } from "./pages/ChestPage";
 import { WithdrawPage } from "./pages/WithdrawPage";
 import { SettingsPage } from "./pages/SettingsPage";
 
 function Private({ children }: { children: React.ReactNode }) {
-  const { token, loading, error, logout } = useAuth();
-  const [verifiedToken, setVerifiedToken] = useState<string | null>(null);
-  useEffect(() => {
-    let active = true;
-    if (token) api.me(token).then(() => {
-      if (active) setVerifiedToken(token);
-    }).catch(() => { if (active) logout(); });
-    return () => { active = false; };
-  }, [token, logout]);
-  if (loading || (token && verifiedToken !== token))
+  const { token, user, loading, error } = useAuth();
+  if (loading)
     return (
       <div className="auth-page">
         <p className="loading-logo">
@@ -38,7 +35,7 @@ function Private({ children }: { children: React.ReactNode }) {
       </div>
     );
   if (error) return <PageState error={error} retry={() => window.location.reload()} />;
-  if (!token) return <Navigate to="/auth" replace />;
+  if (!token || !user) return <Navigate to="/auth" replace />;
   return children;
 }
 
@@ -62,7 +59,13 @@ export function App() {
         <Route path="shop/summon" element={<SummonPage />} />
         <Route path="shop/blacksmiths" element={<BlacksmithPage />} />
         <Route path="shop/porter" element={<PorterPage />} />
+        <Route path="shop/scrap" element={<ScrapShopPage />} />
         <Route path="market" element={<MarketPage />} />
+        <Route path="fusion" element={<FusionPage />} />
+        <Route path="ranking" element={<RankingPage />} />
+        <Route path="stake" element={<StakePage />} />
+        <Route path="armory" element={<ArmoryPage />} />
+        <Route path="mail" element={<MailPage />} />
         <Route path="invites" element={<InvitesPage />} />
         <Route path="chest" element={<ChestPage />} />
         <Route path="withdraw" element={<WithdrawPage />} />

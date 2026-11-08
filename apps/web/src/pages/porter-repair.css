@@ -1,0 +1,12 @@
+.porter-repair { margin-top: 20px; padding: 18px; border: 1px solid #385468; background: #101c2b; box-shadow: inset 0 3px #59b9c8, 4px 4px 0 #08111c; }
+.porter-repair-heading { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.porter-repair-heading small { color: #76c6d3; font-size: 10px; letter-spacing: .14em; }
+.porter-repair-heading h3 { margin: 5px 0 0; color: #f7e5b9; font-family: var(--font-display); font-size: clamp(24px, 2.5vw, 32px); }
+.porter-repair > p { margin: 12px 0 18px; color: #b4c8d0; line-height: 1.5; }
+.porter-repair-toggle { min-width: 76px; padding: 9px 16px; border: 2px solid #607283; background: #293647; color: #c5d1d9; font-family: var(--font-display); font-size: 21px; cursor: pointer; box-shadow: 3px 3px 0 #07111c; }
+.porter-repair-toggle.is-on { border-color: #80e2b0; background: #205b54; color: #ecfff1; }
+.porter-repair-rarities { display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0 14px; }
+.porter-repair-rarity { display: inline-flex; align-items: center; gap: 6px; padding: 7px 10px; border: 2px solid #34495b; background: #1a2736; color: #91a7b5; font-family: var(--font-display); font-size: 18px; cursor: pointer; }
+.porter-repair-rarity.is-on { border-color: var(--rarity-color); color: var(--rarity-color); background: #273245; box-shadow: inset 0 -3px #0d1724; }
+.porter-repair-toggle:disabled, .porter-repair-rarity:disabled { opacity: .55; cursor: wait; }
+.porter-repair-note { color: #8eb6c5; font-size: 11px; }

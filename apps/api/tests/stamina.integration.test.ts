@@ -2,12 +2,16 @@ import "dotenv/config";
 import { after, test } from "node:test";
 import assert from "node:assert/strict";
 import { randomUUID } from "node:crypto";
-import { Keypair } from "@solana/web3.js";
-import nacl from "tweetnacl";
-import bs58 from "bs58";
+import Fastify from "fastify";
+import jwt from "@fastify/jwt";
+import websocket from "@fastify/websocket";
 import { prisma } from "../src/lib/prisma.js";
 import { recoverStamina } from "../src/services/stamina.js";
 import { deployHero, processTicks } from "../src/services/dungeon.js";
+import { demoRoutes } from "../src/routes/demo.js";
+import { heroesRoutes } from "../src/routes/heroes.js";
+import { dungeonRoutes } from "../src/routes/dungeon.js";
+import { wsRoutes } from "../src/routes/ws.js";
 
 const enabled = process.env.HEROBITS_TEST_DATABASE === "1";
 const options = { skip: !enabled };
@@ -69,8 +73,11 @@ test("forge slots are enforced in the database and waiters keep base recovery", 
   });
 });
 test("REST does not instantly refill; HTTP roster and WebSocket show passive recovery", options, async () => {
-  const keys = Keypair.generate(); const wallet = keys.publicKey.toBase58();
-  const base = process.env.HEROBITS_TEST_API_URL ?? "http://127.0.0.1:3001";
+  const app = Fastify();
+  await app.register(jwt, { secret: "disposable-stamina-integration-secret" });
+  await app.register(websocket);
+  for (const routes of [demoRoutes, heroesRoutes, dungeonRoutes, wsRoutes]) await app.register(routes);
+  const base = await app.listen({ port: 0, host: "127.0.0.1" });
   let userId: string | undefined;
   async function request(path: string, token?: string, body?: unknown) {
     const response = await fetch(base + path, { method: body === undefined ? "GET" : "POST", headers: { "Content-Type": "application/json", ...(token ? { Authorization: "Bearer " + token } : {}) }, ...(body === undefined ? {} : { body: JSON.stringify(body) }) });
@@ -79,9 +86,7 @@ test("REST does not instantly refill; HTTP roster and WebSocket show passive rec
     return data;
   }
   try {
-    const challenge = await request("/auth/nonce", undefined, { wallet });
-    const signature = bs58.encode(nacl.sign.detached(new TextEncoder().encode(challenge.message), keys.secretKey));
-    const login = await request("/auth/wallet", undefined, { wallet, signature, nonce: challenge.nonce });
+    const login = await request("/demo/session", undefined, {});
     userId = login.user.id;
     const hero = await prisma.hero.findFirstOrThrow({ where: { userId } });
     await prisma.hero.update({ where: { id: hero.id }, data: { stamina: 0 } });
@@ -109,7 +114,7 @@ test("REST does not instantly refill; HTTP roster and WebSocket show passive rec
     });
   } finally {
     if (userId) await prisma.user.delete({ where: { id: userId } });
-    await prisma.authChallenge.deleteMany({ where: { wallet } });
+    await app.close();
   }
 });
 

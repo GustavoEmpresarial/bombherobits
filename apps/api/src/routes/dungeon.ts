@@ -27,6 +27,7 @@ export async function dungeonRoutes(app: FastifyInstance) {
     const schema = z.object({
       heroId: z.string().optional(),
       all: z.boolean().optional(),
+      mode: z.enum(["all", "over-half"]).optional(),
     });
     const parsed = schema.safeParse(request.body ?? {});
     if (!parsed.success) {
@@ -35,7 +36,7 @@ export async function dungeonRoutes(app: FastifyInstance) {
 
     try {
       if (parsed.data.all) {
-        return await deployAllIdle(request.user.id);
+        return await deployAllIdle(request.user.id, parsed.data.mode ?? "all");
       }
       if (!parsed.data.heroId) {
         return reply.code(400).send({ error: "heroId or all required" });

@@ -114,9 +114,9 @@ export function DungeonPage() {
     }
   }
 
-  function workHeroes(heroId?: string) {
+  function workHeroes(heroId?: string, mode: "all" | "over-half" = "all") {
     if (!token) return;
-    void updateParty(() => api.deploy(token, heroId ? { heroId } : { all: true }));
+    void updateParty(() => api.deploy(token, heroId ? { heroId } : { all: true, mode }));
   }
 
   function restHeroes(ids: string[]) {

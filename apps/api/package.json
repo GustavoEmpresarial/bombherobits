@@ -12,8 +12,8 @@
     "db:migrate:dev": "prisma migrate dev",
     "db:push": "prisma db push",
     "db:seed": "tsx prisma/seed.ts",
-    "test": "tsx --test tests/stamina-recovery.test.ts tests/stamina-usage.test.ts tests/combat-events.test.ts tests/loot-wave.test.ts tests/hero-targeting.test.ts tests/summon-rarities.test.ts tests/snapshot-order.test.ts tests/render-collision.test.ts tests/summon-ui-state.test.ts tests/invite-links.test.ts tests/creators.test.ts tests/marketing.test.ts tests/early-access.test.ts tests/demo-world.test.ts",
-    "test:integration": "tsx --test tests/stamina.integration.test.ts tests/dungeon-combat.integration.test.ts tests/admin.integration.test.ts tests/hero-targeting.integration.test.ts tests/summon-batches.integration.test.ts tests/world-actions.integration.test.ts tests/marketing-admin.integration.test.ts tests/demo-access.integration.test.ts",
+    "test": "tsx --test tests/stamina-recovery.test.ts tests/stamina-usage.test.ts tests/combat-events.test.ts tests/loot-wave.test.ts tests/hero-targeting.test.ts tests/summon-rarities.test.ts tests/snapshot-order.test.ts tests/render-collision.test.ts tests/summon-ui-state.test.ts tests/invite-links.test.ts tests/creators.test.ts tests/marketing.test.ts tests/early-access.test.ts tests/demo-world.test.ts tests/hero-skills.test.ts tests/shield-recovery.test.ts tests/summon-pity.test.ts",
+    "test:integration": "tsx --test tests/*.integration.test.ts",
     "admin:setup": "tsx scripts/setup-admin.ts",
     "admin:rotate": "tsx scripts/rotate-admin.ts"
   },

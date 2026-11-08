@@ -27,8 +27,10 @@ export function useWorld() {
       const data = await action();
       setWorld(data);
       setUser(data.user);
+      return true;
     } catch (e) {
       setError(e instanceof Error ? e.message : "Failed");
+      return false;
     } finally {
       setBusy(false);
     }

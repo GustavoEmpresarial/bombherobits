@@ -13,10 +13,15 @@ import { heroesRoutes } from "./routes/heroes.js";
 import { dungeonRoutes } from "./routes/dungeon.js";
 import { wsRoutes } from "./routes/ws.js";
 import { worldRoutes } from "./routes/world.js";
+import { fusionRoutes } from "./routes/fusion.js";
+import { rankingRoutes } from "./routes/ranking.js";
+import { gearRoutes } from "./routes/gear.js";
+import { mailRoutes } from "./routes/mail.js";
 import { adminRoutes } from "./routes/admin.js";
 import { getSettings } from "./services/config.js";
 
 const port = Number(process.env.API_PORT ?? 3001);
+const host = process.env.API_HOST ?? "0.0.0.0";
 const secret = process.env.JWT_SECRET ?? "herobits-dev-secret-change-me";
 
 async function main() {
@@ -55,10 +60,14 @@ async function main() {
   await app.register(dungeonRoutes);
   await app.register(wsRoutes);
   await app.register(worldRoutes);
+  await app.register(fusionRoutes);
+  await app.register(rankingRoutes);
+  await app.register(gearRoutes);
+  await app.register(mailRoutes);
   await app.register(adminRoutes);
 
-  await app.listen({ port, host: "0.0.0.0" });
-  console.log(`Bomb Hero Bits API on http://localhost:${port}`);
+  await app.listen({ port, host });
+  console.log(`Bomb Hero Bits API on http://${host}:${port}`);
 }
 
 main().catch((err) => {

@@ -1,7 +1,8 @@
 import type { FastifyInstance } from "fastify";
 import type { WebSocket } from "ws";
 import { getConfig } from "../services/config.js";
-import { processTicks } from "../services/dungeon.js";
+import { buildSnapshot, processTicks } from "../services/dungeon.js";
+import { runPorter } from "../services/porter-auto.js";
 import { sessionHasAccess, type JwtUser } from "../lib/auth.js";
 
 type SocketMeta = { userId: string; timer?: ReturnType<typeof setInterval> };
@@ -34,9 +35,11 @@ export async function wsRoutes(app: FastifyInstance) {
         try {
           if (!await sessionHasAccess(session)) { socket.close(4003, "Early access required"); return; }
           const snapshot = await processTicks(userId);
+          const changed = snapshot ? await runPorter(userId) : false;
+          const current = changed ? await buildSnapshot(userId) : snapshot;
           if (socket.readyState !== 1) return;
-          if (snapshot) {
-            socket.send(JSON.stringify({ type: "snapshot", data: snapshot }));
+          if (current) {
+            socket.send(JSON.stringify({ type: "snapshot", data: current }));
           } else {
             socket.send(JSON.stringify({ type: "idle" }));
           }

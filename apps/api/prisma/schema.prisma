@@ -59,6 +59,26 @@ enum HeroRarity {
   SUPER_LEGENDARY
 }
 
+enum GearSlot {
+  HELM
+  ARMOR
+  BOOTS
+}
+
+enum GearElement {
+  FIRE
+  STORM
+  FROST
+}
+
+enum GearRarity {
+  STEEL
+  GREEN
+  BLUE
+  PURPLE
+  GOLD
+}
+
 enum HeroStatus {
   IDLE
   HUNTING
@@ -80,6 +100,8 @@ enum ListingStatus {
 enum TargetType {
   SLIME
   BLOCK
+  MONSTER
+  BOSS
 }
 
 enum DungeonRunStatus {
@@ -94,18 +116,94 @@ model User {
   gold         Decimal      @default(500) @db.Decimal(18, 2)
   chest        Decimal      @default(0) @db.Decimal(18, 2)
   mintCards    Int          @default(0)
+  scrap        Int          @default(0)
+  summonPityRare Int        @default(0)
+  summonPitySuperRare Int   @default(0)
+  summonPityEpic Int        @default(0)
   inviteCode   String?      @unique
   referredBy   String?
   porterOn     Boolean      @default(false)
+  shieldRepairOn Boolean     @default(false)
+  shieldRepairRarities HeroRarity[] @default([COMMON, RARE, SUPER_RARE, EPIC, LEGENDARY, SUPER_LEGENDARY])
   staminaUpdatedAt DateTime @default(now())
   createdAt    DateTime     @default(now())
   summonBatches SummonBatch[]
+  fusions      Fusion[]
   heroes       Hero[]
   blacksmiths  Blacksmith[]
   porters      Porter[]
   listings     Listing[]
   dungeonRuns  DungeonRun[]
   rewardLogs   RewardLog[]
+  mails        PlayerMail[]
+  gearPieces   GearPiece[]
+  gearPurchases GearPurchase[]
+}
+
+model GearPiece {
+  id           String      @id @default(cuid())
+  userId       String
+  user         User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  heroId       String?
+  hero         Hero?       @relation(fields: [heroId], references: [id], onDelete: SetNull)
+  slot         GearSlot
+  element      GearElement
+  rarity       GearRarity
+  attack       Int
+  shield       Int
+  shieldMax    Int
+  lastHeroId   String?
+  movedDay     DateTime?   @db.Date
+  createdAt    DateTime    @default(now())
+  purchases    GearPurchase[]
+
+  @@unique([heroId, slot])
+  @@index([userId, heroId])
+}
+
+model GearPurchase {
+  id         String    @id @default(cuid())
+  userId     String
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  requestKey String
+  pieceId    String?
+  piece      GearPiece? @relation(fields: [pieceId], references: [id], onDelete: SetNull)
+  cost       Int
+  createdAt  DateTime  @default(now())
+
+  @@unique([userId, requestKey])
+}
+
+model PlayerMail {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sourceKey String   @unique
+  title     String
+  body      String
+  gold      Decimal  @default(0) @db.Decimal(18, 2)
+  mintCards Int      @default(0)
+  scrap     Int      @default(0)
+  claimedAt DateTime?
+  createdAt DateTime @default(now())
+
+  @@index([userId, createdAt])
+}
+
+model Fusion {
+  id           String     @id @default(cuid())
+  userId       String
+  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  requestKey   String
+  sourceIds    Json
+  sourceRarity HeroRarity
+  resultRarity HeroRarity
+  resultHeroId String
+  critical     Boolean    @default(false)
+  createdAt    DateTime   @default(now())
+
+  @@unique([userId, requestKey])
+  @@index([userId, createdAt])
 }
 
 model Blacksmith {
@@ -168,12 +266,19 @@ model Hero {
   spd        Int
   stamina    Int
   maxStamina Int
+  shield     Int        @default(6000)
+  shieldMax  Int        @default(6000)
+  shieldLevel Int       @default(1)
+  skills     Json       @default("[]")
+  shieldRecoveryUnits Int @default(0)
   staminaRecoveryUnits Int @default(0)
   staminaUsageUnits Int @default(0)
+  forgeMode  String     @default("AUTO")
   status     HeroStatus @default(IDLE)
   dungeonX   Int?
   dungeonY   Int?
   createdAt  DateTime   @default(now())
+  gearPieces GearPiece[]
 
   @@index([userId])
   @@index([userId, status])
@@ -284,4 +389,5 @@ model SummonBatch {
  heroes Hero[]
  @@unique([userId,requestKey])
  @@index([userId,status])
+ @@index([createdAt])
 }

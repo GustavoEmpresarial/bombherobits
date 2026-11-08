@@ -1,9 +1,11 @@
 import { randomBytes } from "node:crypto";
+import { Prisma, type HeroRarity } from "@prisma/client";
 import { type UserDto } from "@herobits/shared";
 import { prisma } from "../lib/prisma.js";
 import { toGold, toUserDto } from "../lib/mappers.js";
 import { processTicks } from "./dungeon.js";
 import { runtimeRules,getConfig } from "./config.js";
+import { selectForgeHeroes } from "./stamina-recovery.js";
 
 export async function ensureProfile(userId: string) {
   const user = await prisma.user.findUniqueOrThrow({ where: { id: userId } });
@@ -22,7 +24,7 @@ export async function worldState(userId: string) {
   const {ECONOMY,BLACKSMITHS}=await runtimeRules();
   await processTicks(userId);
   const user = await ensureProfile(userId);
-  const [blacksmiths, porters, listings] = await Promise.all([
+  const [blacksmiths, porters, listings, myListings] = await Promise.all([
     prisma.blacksmith.findMany({ where: { userId }, orderBy: { tier: "asc" } }),
     prisma.porter.findMany({ where: { userId } }),
     prisma.listing.findMany({
@@ -31,8 +33,17 @@ export async function worldState(userId: string) {
       take: 40,
       include: { seller: { select: { displayName: true, wallet: true } } },
     }),
+    prisma.listing.findMany({ where: { sellerId: userId, status: "OPEN" }, orderBy: { createdAt: "desc" }, take: 50 }),
   ]);
+  const listedHeroIds = [...listings, ...myListings].filter((listing) => listing.kind === "HERO").map((listing) => listing.refId);
+  const listedHeroes = listedHeroIds.length ? await prisma.hero.findMany({ where: { id: { in: listedHeroIds } }, select: { id: true, class: true } }) : [];
+  const heroClassById = new Map(listedHeroes.map((hero) => [hero.id, hero.class]));
   const service = blacksmiths.find((b) => b.inService);
+  const restingHeroes = service ? await prisma.hero.findMany({
+    where: { userId, status: "IDLE" },
+    select: { id: true, stamina: true, maxStamina: true, staminaRecoveryUnits: true, createdAt: true, forgeMode: true, atk: true, spd: true, rarity: true, shield: true },
+  }) : [];
+  const serviceSlots = BLACKSMITHS.find(spec => spec.tier === service?.tier)?.slots ?? 0;
   return {
     user: toUserDto(user),
     blacksmiths: blacksmiths.map((b) => ({
@@ -42,8 +53,12 @@ export async function worldState(userId: string) {
       inService: b.inService,
     })),
     serviceName: service ? BLACKSMITHS[service.tier - 1]?.name ?? null : null,
+    forgeHeroIds: selectForgeHeroes(restingHeroes, serviceSlots, user.porterOn && porters.length > 0).map(hero => hero.id),
     porters: porters.length,
+    porterItems: porters.map((porter) => ({ id: porter.id })),
     porterOn: user.porterOn,
+    shieldRepairOn: user.shieldRepairOn,
+    shieldRepairRarities: user.shieldRepairRarities,
     listings: listings.map((l) => ({
       id: l.id,
       kind: l.kind,
@@ -51,7 +66,9 @@ export async function worldState(userId: string) {
       price: toGold(l.price),
       seller: l.seller.displayName,
       mine: l.sellerId === userId,
+      heroClass: l.kind === "HERO" ? heroClassById.get(l.refId) ?? null : null,
     })),
+    myListings: myListings.map((l) => ({ id: l.id, kind: l.kind, refId: l.refId, title: l.title, price: toGold(l.price), heroClass: l.kind === "HERO" ? heroClassById.get(l.refId) ?? null : null })),
     catalog: BLACKSMITHS,
     economy: ECONOMY,
   };
@@ -86,15 +103,41 @@ export async function buyBlacksmith(userId: string, tier: number) {
 
 export async function setBlacksmithService(userId: string, id: string) {
   await processTicks(userId);
-  const row = await prisma.blacksmith.findFirst({ where: { id, userId } });
-  if (!row) throw fail("Blacksmith not found", 404);
-  await prisma.$transaction([
-    prisma.blacksmith.updateMany({
-      where: { userId },
-      data: { inService: false },
-    }),
-    prisma.blacksmith.update({ where: { id }, data: { inService: true } }),
-  ]);
+  await prisma.$transaction(async (tx) => {
+    await tx.$queryRaw`SELECT "id" FROM "User" WHERE "id" = ${userId} FOR UPDATE`;
+    const row = await tx.blacksmith.findFirst({ where: { id, userId } });
+    if (!row) throw fail("Blacksmith not found", 404);
+    if (await tx.listing.count({ where: { sellerId: userId, kind: "BLACKSMITH", refId: id, status: "OPEN" } })) {
+      throw fail("Cancel this house listing before activating it");
+    }
+    await tx.blacksmith.updateMany({ where: { userId }, data: { inService: false } });
+    await tx.blacksmith.update({ where: { id }, data: { inService: true } });
+  });
+  return worldState(userId);
+}
+
+export async function setForgeAssignment(userId: string, heroId: string, assigned: boolean) {
+  const { BLACKSMITHS } = await runtimeRules();
+  await processTicks(userId);
+  await prisma.$transaction(async (tx) => {
+    await tx.$queryRaw`SELECT "id" FROM "User" WHERE "id" = ${userId} FOR UPDATE`;
+    const [user, service, porters, hero] = await Promise.all([
+      tx.user.findUniqueOrThrow({ where: { id: userId } }),
+      tx.blacksmith.findFirst({ where: { userId, inService: true } }),
+      tx.porter.count({ where: { userId } }),
+      tx.hero.findFirst({ where: { id: heroId, userId } }),
+    ]);
+    if (!service) throw fail("Activate a recovery house first");
+    if (user.porterOn && porters > 0) throw fail("Switch the porter off to choose forge slots by hand");
+    if (!hero || hero.status !== "IDLE") throw fail("Only resting heroes can use a forge slot");
+    if (assigned && hero.stamina >= hero.maxStamina) throw fail("This hero is already fully rested");
+    if (assigned && hero.forgeMode !== "PINNED") {
+      const slots = BLACKSMITHS.find(spec => spec.tier === service.tier)?.slots ?? 0;
+      const pinned = await tx.hero.findMany({ where: { userId, status: "IDLE", forgeMode: "PINNED" }, select: { stamina: true, maxStamina: true } });
+      if (pinned.filter(row => row.stamina < row.maxStamina).length >= slots) throw fail("Every recovery slot is assigned");
+    }
+    await tx.hero.update({ where: { id: heroId }, data: { forgeMode: assigned ? "PINNED" : "EXCLUDED" } });
+  });
   return worldState(userId);
 }
 
@@ -121,12 +164,37 @@ export async function buyPorter(userId: string) {
 }
 
 export async function togglePorter(userId: string) {
-  const owned = await prisma.porter.count({ where: { userId } });
-  if (!owned) throw fail("You have no porter");
-  const user = await prisma.user.findUniqueOrThrow({ where: { id: userId } });
-  await prisma.user.update({
-    where: { id: userId },
-    data: { porterOn: !user.porterOn },
+  await prisma.$transaction(async (tx) => {
+    await tx.$queryRaw`SELECT "id" FROM "User" WHERE "id" = ${userId} FOR UPDATE`;
+    const owned = await tx.porter.findFirst({ where: { userId } });
+    if (!owned) throw fail("You have no porter");
+    const user = await tx.user.findUniqueOrThrow({ where: { id: userId } });
+    if (!user.porterOn && await tx.listing.count({ where: { sellerId: userId, kind: "PORTER", refId: owned.id, status: "OPEN" } })) {
+      throw fail("Cancel the porter listing before turning it on");
+    }
+    await tx.user.update({ where: { id: userId }, data: { porterOn: !user.porterOn } });
+  });
+  return worldState(userId);
+}
+
+export async function setShieldRepair(userId: string, enabled: boolean) {
+  await prisma.$transaction(async (tx) => {
+    await tx.$queryRaw`SELECT "id" FROM "User" WHERE "id" = ${userId} FOR UPDATE`;
+    if (!(await tx.porter.count({ where: { userId } }))) throw fail("You have no porter");
+    await tx.user.update({ where: { id: userId }, data: { shieldRepairOn: enabled } });
+  });
+  return worldState(userId);
+}
+
+export async function setShieldRepairRarity(userId: string, rarity: HeroRarity, enabled: boolean) {
+  await prisma.$transaction(async (tx) => {
+    await tx.$queryRaw`SELECT "id" FROM "User" WHERE "id" = ${userId} FOR UPDATE`;
+    if (!(await tx.porter.count({ where: { userId } }))) throw fail("You have no porter");
+    const user = await tx.user.findUniqueOrThrow({ where: { id: userId } });
+    const rarities = enabled
+      ? [...new Set([...user.shieldRepairRarities, rarity])]
+      : user.shieldRepairRarities.filter(value => value !== rarity);
+    await tx.user.update({ where: { id: userId }, data: { shieldRepairRarities: rarities } });
   });
   return worldState(userId);
 }
@@ -138,81 +206,92 @@ export async function listForSale(
   price: number,
 ) {
   const {BLACKSMITHS}=await runtimeRules();
-  if (!Number.isFinite(price) || price <= 0) throw fail("Set a price");
+  if (!Number.isSafeInteger(Math.round(price * 100)) || price < 0.01 || price > 1_000_000_000 || Math.abs(Math.round(price * 100) / 100 - price) > 0.000001) throw fail("Set a valid price with at most two decimals");
   await processTicks(userId);
-  let title: string = kind;
-  if (kind === "HERO") {
-    const hero = await prisma.hero.findFirst({ where: { id: refId, userId } });
-    if (!hero) throw fail("Hero not found", 404);
-    if (hero.status === "HUNTING") throw fail("Deactivate the hero first");
-    title = `${hero.rarity} ${hero.class}`;
-    await prisma.hero.update({
-      where: { id: hero.id },
-      data: { status: "LISTED", dungeonX: null, dungeonY: null },
-    });
-  } else if (kind === "BLACKSMITH") {
-    const row = await prisma.blacksmith.findFirst({ where: { id: refId, userId } });
-    if (!row) throw fail("Blacksmith not found", 404);
-    if (row.inService) throw fail("Take the blacksmith out of service first");
-    title = BLACKSMITHS[row.tier - 1]?.name ?? "Blacksmith";
-  } else {
-    const row = await prisma.porter.findFirst({ where: { id: refId, userId } });
-    if (!row) throw fail("Porter not found", 404);
-    title = "Porter";
-  }
-
-  await prisma.listing.create({
-    data: { sellerId: userId, kind, refId, title, price },
+  await prisma.$transaction(async (tx) => {
+    await tx.$queryRaw`SELECT "id" FROM "User" WHERE "id" = ${userId} FOR UPDATE`;
+    const duplicate = await tx.listing.count({ where: { sellerId: userId, kind, refId, status: "OPEN" } });
+    if (duplicate) throw fail("This item is already listed", 409);
+    let title: string = kind;
+    if (kind === "HERO") {
+      const hero = await tx.hero.findFirst({ where: { id: refId, userId } });
+      if (!hero) throw fail("Hero not found", 404);
+      if (hero.status !== "IDLE") throw fail("Rest the hero before listing it");
+      title = `${hero.rarity.replaceAll("_", " ")} ${hero.class}`;
+      const changed = await tx.hero.updateMany({ where: { id: refId, userId, status: "IDLE" }, data: { status: "LISTED", forgeMode: "AUTO", dungeonX: null, dungeonY: null } });
+      if (!changed.count) throw fail("Hero status changed. Try again.", 409);
+    } else if (kind === "BLACKSMITH") {
+      const row = await tx.blacksmith.findFirst({ where: { id: refId, userId } });
+      if (!row) throw fail("Recovery house not found", 404);
+      if (row.inService) throw fail("Take the house out of service first");
+      title = BLACKSMITHS[row.tier - 1]?.name ?? "Recovery House";
+    } else {
+      const row = await tx.porter.findFirst({ where: { id: refId, userId } });
+      if (!row) throw fail("Porter not found", 404);
+      const user = await tx.user.findUniqueOrThrow({ where: { id: userId } });
+      if (user.porterOn) throw fail("Turn off the porter before listing it");
+      title = "Porter";
+    }
+    await tx.listing.create({ data: { sellerId: userId, kind, refId, title, price: new Prisma.Decimal(price.toFixed(2)) } });
   });
   return worldState(userId);
 }
 
 export async function buyListing(userId: string, listingId: string) {
-  const {ECONOMY,BLACKSMITHS}=await runtimeRules();
-  const listing = await prisma.listing.findUnique({ where: { id: listingId } });
-  if (!listing || listing.status !== "OPEN") throw fail("Listing is gone");
-  if (listing.sellerId === userId) throw fail("That is your listing");
-  const [buyerScope, sellerScope] = await Promise.all([
-    prisma.user.findUniqueOrThrow({ where: { id: userId }, select: { wallet: true } }),
-    prisma.user.findUniqueOrThrow({ where: { id: listing.sellerId }, select: { wallet: true } }),
-  ]);
-  if (buyerScope.wallet.startsWith("demo:") !== sellerScope.wallet.startsWith("demo:")) throw fail("Listing is gone", 404);
-  await Promise.all([processTicks(userId), processTicks(listing.sellerId)]);
-  const price = toGold(listing.price);
-  const buyer = await prisma.user.findUniqueOrThrow({ where: { id: userId } });
-  if (toGold(buyer.gold) < price) throw fail("Not enough gold");
-  const fee = Math.round(price * ECONOMY.MARKET_FEE * 100) / 100;
-  const received = price - fee;
-
+  const {ECONOMY}=await runtimeRules();
+  const initial = await prisma.listing.findUnique({ where: { id: listingId } });
+  if (!initial || initial.status !== "OPEN") throw fail("Listing is gone", 404);
+  if (initial.sellerId === userId) throw fail("That is your listing");
+  await Promise.all([processTicks(userId), processTicks(initial.sellerId)]);
   await prisma.$transaction(async (tx) => {
-    await tx.user.update({
-      where: { id: userId },
-      data: { gold: { decrement: price } },
-    });
-    await tx.user.update({
-      where: { id: listing.sellerId },
-      data: { gold: { increment: received } },
-    });
-    await tx.listing.update({
-      where: { id: listing.id },
-      data: { status: "SOLD" },
-    });
+    const lockedUsers = [userId, initial.sellerId].sort();
+    await tx.$queryRaw`SELECT "id" FROM "User" WHERE "id" IN (${Prisma.join(lockedUsers)}) ORDER BY "id" FOR UPDATE`;
+    await tx.$queryRaw`SELECT "id" FROM "Listing" WHERE "id" = ${listingId} FOR UPDATE`;
+    const listing = await tx.listing.findUnique({ where: { id: listingId } });
+    if (!listing || listing.status !== "OPEN") throw fail("Listing is gone", 409);
+    const [buyer, seller] = await Promise.all([
+      tx.user.findUniqueOrThrow({ where: { id: userId } }),
+      tx.user.findUniqueOrThrow({ where: { id: listing.sellerId } }),
+    ]);
+    if (buyer.wallet.startsWith("demo:") !== seller.wallet.startsWith("demo:")) throw fail("Listing is gone", 404);
+    const price = toGold(listing.price);
+    const fee = Math.round(price * ECONOMY.MARKET_FEE * 100) / 100;
+    const received = price - fee;
+    const payment = await tx.user.updateMany({ where: { id: userId, gold: { gte: listing.price } }, data: { gold: { decrement: listing.price } } });
+    if (!payment.count) throw fail("Not enough gold");
     if (listing.kind === "HERO") {
-      await tx.hero.update({
-        where: { id: listing.refId },
-        data: { userId, status: "IDLE", dungeonX: null, dungeonY: null },
-      });
+      const capacity = await tx.hero.count({ where: { userId } });
+      const pending = await tx.summonBatch.aggregate({ where: { userId, status: { in: ["SEALED", "REVEALED"] } }, _sum: { count: true } });
+      if (capacity + (pending._sum.count ?? 0) >= ECONOMY.MAX_ACTIVE) throw fail("Hero roster is full");
+      const incomingGear = await tx.gearPiece.count({ where: { userId: listing.sellerId, heroId: listing.refId } });
+      if (await tx.gearPiece.count({ where: { userId } }) + incomingGear > 500) throw fail("Armory is full");
+      const moved = await tx.hero.updateMany({ where: { id: listing.refId, userId: listing.sellerId, status: "LISTED" }, data: { userId, status: "IDLE", forgeMode: "AUTO", dungeonX: null, dungeonY: null } });
+      if (!moved.count) throw fail("Hero is no longer available", 409);
+      await tx.gearPiece.updateMany({ where: { userId: listing.sellerId, heroId: listing.refId }, data: { userId, lastHeroId: null, movedDay: null } });
     } else if (listing.kind === "BLACKSMITH") {
-      await tx.blacksmith.update({
-        where: { id: listing.refId },
-        data: { userId, inService: false },
-      });
+      const house = await tx.blacksmith.findFirst({ where: { id: listing.refId, userId: listing.sellerId, inService: false } });
+      if (!house) throw fail("House is no longer available", 409);
+      if (await tx.blacksmith.count({ where: { userId, tier: house.tier } })) throw fail("You already own this house tier");
+      await tx.blacksmith.update({ where: { id: house.id }, data: { userId } });
     } else {
-      await tx.porter.update({
-        where: { id: listing.refId },
-        data: { userId },
-      });
+      if (await tx.porter.count({ where: { userId } })) throw fail("You already own a porter");
+      const moved = await tx.porter.updateMany({ where: { id: listing.refId, userId: listing.sellerId }, data: { userId } });
+      if (!moved.count) throw fail("Porter is no longer available", 409);
     }
+    await tx.listing.update({ where: { id: listing.id }, data: { status: "SOLD" } });
+    await tx.user.update({ where: { id: listing.sellerId }, data: { gold: { increment: received } } });
+  }, { timeout: 15000 });
+  return worldState(userId);
+}
+
+export async function cancelListing(userId: string, listingId: string) {
+  await prisma.$transaction(async (tx) => {
+    await tx.$queryRaw`SELECT "id" FROM "User" WHERE "id" = ${userId} FOR UPDATE`;
+    await tx.$queryRaw`SELECT "id" FROM "Listing" WHERE "id" = ${listingId} FOR UPDATE`;
+    const listing = await tx.listing.findFirst({ where: { id: listingId, sellerId: userId, status: "OPEN" } });
+    if (!listing) throw fail("Listing is gone", 404);
+    await tx.listing.update({ where: { id: listing.id }, data: { status: "CANCELLED" } });
+    if (listing.kind === "HERO") await tx.hero.updateMany({ where: { id: listing.refId, userId, status: "LISTED" }, data: { status: "IDLE" } });
   });
   return worldState(userId);
 }

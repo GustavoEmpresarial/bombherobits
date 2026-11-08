@@ -1,0 +1,1 @@
+ALTER TABLE "Hero" ADD COLUMN "shieldRecoveryUnits" INTEGER NOT NULL DEFAULT 0;

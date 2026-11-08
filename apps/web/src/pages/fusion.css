@@ -1,0 +1,30 @@
+.fusion-page { max-width: 1500px; margin: 0 auto; }
+.fusion-layout { display: grid; grid-template-columns: minmax(300px, .86fr) minmax(400px, 1.4fr); gap: 22px; align-items: start; }
+.fusion-altar, .fusion-roster { padding: 24px; border-top: 3px solid #b67aff; }
+.fusion-altar { text-align: center; }
+.fusion-altar-art { height: 190px; display: grid; place-items: center; overflow: hidden; background: radial-gradient(circle, #452d68 0, #1c2032 58%, transparent 80%); }
+.fusion-altar-art img { width: 215px; height: 215px; object-fit: contain; image-rendering: pixelated; filter: drop-shadow(0 0 18px #ba76ff99); animation: fusion-float 3.5s ease-in-out infinite; }
+.fusion-flow { display: flex; align-items: center; justify-content: center; gap: 15px; margin: 14px 0 20px; color: #f8d28a; font-size: 14px; }
+.fusion-flow span { color: #bc84ff; }
+.fusion-slots { display: flex; justify-content: center; gap: 10px; }
+.fusion-slot { width: 68px; height: 72px; display: grid; place-items: center; border: 2px solid #607085; background: #101824; box-shadow: inset 0 0 16px #38284e; overflow: hidden; }
+.fusion-slot-empty { font-size: 24px; color: #64788a; }
+.fusion-action { width: 100%; margin-top: 20px; }
+.fusion-warning, .fusion-roster-note { color: #9db0c1; font-size: 12px; line-height: 1.5; }
+.fusion-result { margin-top: 20px; padding: 18px; display: grid; justify-items: center; gap: 4px; background: #151e2b; border: 2px solid var(--fusion-accent); box-shadow: 0 0 24px color-mix(in srgb, var(--fusion-accent) 35%, transparent); }
+.fusion-result > span { color: var(--fusion-accent); font-size: 12px; letter-spacing: .1em; }
+.fusion-result > strong { color: #fff2d9; font-size: 25px; }
+.fusion-result > small { color: #abc2d4; }
+.fusion-rarity-tabs { display: flex; flex-wrap: wrap; gap: 7px; }
+.fusion-rarity-tabs button { background: #263447; color: #9eb1c8; border: 1px solid #4b637c; padding: 10px 12px; font: inherit; font-size: 12px; cursor: pointer; }
+.fusion-rarity-tabs button.active { background: #304c5b; color: #d0f8fc; border-color: #72e1e7; }
+.fusion-rarity-tabs small { margin-left: 5px; opacity: .7; }
+.fusion-hero-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(135px, 1fr)); gap: 10px; margin-top: 16px; max-height: 600px; overflow: auto; }
+.fusion-hero { display: grid; justify-items: center; gap: 2px; background: #192330; border: 2px solid #405268; color: #f7ecd9; padding: 12px 8px; cursor: pointer; font: inherit; }
+.fusion-hero:hover, .fusion-hero.selected { border-color: var(--fusion-accent); background: #273246; }
+.fusion-hero small { font-size: 10px; color: #a9b9c7; }
+.fusion-hero > span:last-child { font-size: 10px; color: var(--fusion-accent); margin-top: 6px; }
+.fusion-empty { grid-column: 1 / -1; padding: 40px 20px; text-align: center; color: #a9b9c7; border: 1px dashed #506176; }
+@keyframes fusion-float { 50% { transform: translateY(-7px); } }
+@media (max-width: 850px) { .fusion-layout { grid-template-columns: 1fr; } }
+@media (prefers-reduced-motion: reduce) { .fusion-altar-art img { animation: none; } }

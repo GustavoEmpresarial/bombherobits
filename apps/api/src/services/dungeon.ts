@@ -1,10 +1,15 @@
 import {
   GAME,
   cellBlocked,
+  pathBetween,
   type DungeonSnapshot,
   type DungeonCombatEvent,
   type TargetType,
   type LootKind,
+  type TargetKind,
+  HERO_SKILLS,
+  equipmentAttack,
+  type HeroSkill,
 } from "@herobits/shared";
 import type { Hero, Prisma } from "@prisma/client";
 import { prisma } from "../lib/prisma.js";
@@ -17,6 +22,12 @@ import { getConfig, gameRules, runtimeRules } from "./config.js";
 
 function occupiedKey(x: number, y: number) {
   return `${x},${y}`;
+}
+
+function skillsOf(hero: Hero): Set<HeroSkill> {
+  return new Set(Array.isArray(hero.skills)
+    ? hero.skills.filter((value): value is HeroSkill => typeof value === "string" && HERO_SKILLS.includes(value as HeroSkill))
+    : []);
 }
 
 export function randomEmptyCell(
@@ -35,7 +46,7 @@ export function randomEmptyCell(
   return null;
 }
 
-export async function spawnTargets(runId: string, count?: number) {
+export async function spawnTargets(runId: string, count?: number, wave = 1) {
   const config=await getConfig();
   const {GAME}=gameRules(config);
   const occupied = new Set<string>();
@@ -48,7 +59,7 @@ export async function spawnTargets(runId: string, count?: number) {
   const data: {
     runId: string;
     type: TargetType;
-    kind: LootKind;
+    kind: TargetKind;
     reward: number;
     hp: number;
     maxHp: number;
@@ -73,10 +84,24 @@ export async function spawnTargets(runId: string, count?: number) {
     });
   }
 
+  const chestCount = data.length;
+  if (wave >= 2) {
+    for (let index = 0; index < Math.min(5, 1 + Math.floor(wave / 2)); index++) {
+      const cell = randomEmptyCell(occupied);
+      if (!cell) break;
+      data.push({ runId, type: "MONSTER", kind: "obsidian-beetle", reward: 12, hp: 85 + wave * 12, maxHp: 85 + wave * 12, x: cell.x, y: cell.y });
+    }
+  }
+  if (wave >= 5 && wave % 5 === 0) {
+    const cell = randomEmptyCell(occupied);
+    if (cell) data.push({ runId, type: "BOSS", kind: "ember-sentinel", reward: 150 + wave * 10,
+      hp: 250 + wave * 50, maxHp: 250 + wave * 50, x: cell.x, y: cell.y });
+  }
+
   if (data.length) {
     await prisma.dungeonTarget.createMany({ data });
   }
-  return data.length;
+  return chestCount;
 }
 
 export async function getActiveRun(userId: string) {
@@ -114,7 +139,7 @@ export async function buildSnapshot(userId: string): Promise<DungeonSnapshot | n
     heroes: heroes.map(toHeroDto),
     targets: run.targets.map((t) => ({
       id: t.id,
-      kind:t.kind as LootKind,
+      kind:t.kind as TargetKind,
       type: t.type,
       hp: t.hp,
       maxHp: t.maxHp,
@@ -159,19 +184,21 @@ async function advanceDungeon(userId: string) {
   let sequence = run.combatSequence;
   const combatEvents = (Array.isArray(run.combatEvents) ? run.combatEvents : []) as unknown as DungeonCombatEvent[];
   const rewardSources: string[] = [];
+  const bossDefeats: string[] = [];
 
   for (let t = 0; t < ticks; t++) {
     const [heroes, currentTargets] = await Promise.all([
       prisma.hero.findMany({
         where: { userId, status: "HUNTING" },
+        include: { gearPieces: true },
       }),
       prisma.dungeonTarget.findMany({ where: { runId: run.id } }),
     ]);
 
     let targets = currentTargets;
     if (targets.length === 0) {
-      waveTotal = await spawnTargets(run.id);
       wave += 1;
+      waveTotal = await spawnTargets(run.id, undefined, wave);
       targets = await prisma.dungeonTarget.findMany({ where: { runId: run.id } });
     }
     if (!heroes.length) break;
@@ -203,6 +230,7 @@ async function advanceDungeon(userId: string) {
       }
 
       if (!targetById.size) continue;
+      const skills = skillsOf(hero);
       const range = config.heroes.classes[hero.class].range;
       const plan = planHeroHunt(
         { x: hero.dungeonX, y: hero.dungeonY }, targetById.values(), range, occupied,
@@ -211,7 +239,7 @@ async function advanceDungeon(userId: string) {
       let x = hero.dungeonX;
       let y = hero.dungeonY;
       if (plan) {
-        for (const next of plan.path.slice(0, hero.spd)) {
+        for (const next of plan.path.slice(0, skills.has("swift") ? Math.ceil(hero.spd * 1.5) : hero.spd)) {
           occupied.delete(occupiedKey(x, y));
           x = next.x;
           y = next.y;
@@ -222,9 +250,18 @@ async function advanceDungeon(userId: string) {
       const usage = consumeStamina(hero.stamina, hero.staminaUsageUnits, GAME.TICK_MS, config.stamina.usagePerMinute);
       let stamina = usage.stamina;
       let status = hero.status;
+      let shield = hero.shield;
+      const staminaUsageUnits = usage.staminaUsageUnits;
 
       if (nearest && canAttackTarget({ x, y }, nearest, range, occupied)) {
-        const damage = Math.min(nearest.hp, hero.atk);
+        const preciseStrike = skills.has("precision") && Math.random() < 0.2;
+        const previousHits = combatEvents.slice(-20).filter((event) => event.heroId === hero.id && event.targetId === nearest.id);
+        const fury = skills.has("fury") ? Math.min(previousHits.length, 4) * 0.06 : 0;
+        const execute = skills.has("execute") && nearest.hp <= nearest.maxHp / 4 ? 0.5 : 0;
+        const monsterBonus = skills.has("enemyDamage") && nearest.type === "MONSTER" ? 0.2 : 0;
+        const bossBonus = skills.has("bossDamage") && nearest.type === "BOSS" ? 50 : 0;
+        const gearAttack = equipmentAttack(hero.gearPieces);
+        const damage = Math.min(nearest.hp, Math.max(1, Math.round((hero.atk + gearAttack) * (1 + fury + execute + monsterBonus + (preciseStrike ? 0.2 : 0)) + bossBonus)));
         const remaining = nearest.hp - damage;
         const destroyed = remaining <= 0;
         const reward = destroyed ? toGold(nearest.reward) : 0;
@@ -234,7 +271,7 @@ async function advanceDungeon(userId: string) {
           heroClass: hero.class,
           targetId: nearest.id,
           targetType: nearest.type,
-          kind:nearest.kind as LootKind,
+          kind:nearest.kind as TargetKind,
           fromX: x,
           fromY: y,
           x: nearest.x,
@@ -248,8 +285,9 @@ async function advanceDungeon(userId: string) {
         if (combatEvents.length > 64) combatEvents.shift();
         if (destroyed) {
           goldEarned += reward;
-          openedCrates += 1;
+          if (nearest.type === "SLIME" || nearest.type === "BLOCK") openedCrates += 1;
           rewardSources.push(`${nearest.type}:${reward}`);
+          if (nearest.type === "BOSS") bossDefeats.push(nearest.id);
           targetById.delete(nearest.id);
           occupied.delete(occupiedKey(nearest.x, nearest.y));
           await prisma.dungeonTarget.delete({ where: { id: nearest.id } });
@@ -259,8 +297,8 @@ async function advanceDungeon(userId: string) {
         }
       }
 
-      if (stamina <= 0) {
-        stamina = 0;
+      if (stamina <= 0 || shield <= 0) {
+        stamina = Math.max(0, stamina);
         status = "IDLE";
         occupied.delete(occupiedKey(x, y));
         await prisma.hero.update({
@@ -269,6 +307,7 @@ async function advanceDungeon(userId: string) {
             dungeonX: null,
             dungeonY: null,
             stamina,
+            shield,
             staminaRecoveryUnits: 0,
             staminaUsageUnits: 0,
             status,
@@ -277,8 +316,70 @@ async function advanceDungeon(userId: string) {
       } else {
         await prisma.hero.update({
           where: { id: hero.id },
-          data: { dungeonX: x, dungeonY: y, stamina, staminaRecoveryUnits: 0, staminaUsageUnits: usage.staminaUsageUnits, status },
+          data: { dungeonX: x, dungeonY: y, stamina, shield, staminaRecoveryUnits: 0, staminaUsageUnits, status },
         });
+      }
+    }
+
+    const survivingHunters = await prisma.hero.findMany({ where: { userId, status: "HUNTING", shield: { gt: 0 } } });
+    for (const monster of targetById.values()) {
+      if ((monster.type !== "MONSTER" && monster.type !== "BOSS") || !survivingHunters.length) continue;
+      let nearestHero = survivingHunters
+        .filter((hero) => hero.dungeonX != null && hero.dungeonY != null)
+        .sort((a, b) => Math.abs(a.dungeonX! - monster.x) + Math.abs(a.dungeonY! - monster.y)
+          - Math.abs(b.dungeonX! - monster.x) - Math.abs(b.dungeonY! - monster.y))[0];
+      if (!nearestHero) continue;
+      let distance = Math.abs(nearestHero.dungeonX! - monster.x) + Math.abs(nearestHero.dungeonY! - monster.y);
+      const bossCanMove = monster.type !== "BOSS" || Math.floor((start + (t + 1) * GAME.TICK_MS) / GAME.TICK_MS) % 2 === 0;
+      if (distance > 1 && bossCanMove) {
+        const walkable = new Set(occupied);
+        walkable.delete(occupiedKey(monster.x, monster.y));
+        const nearbyHunters = survivingHunters
+          .filter((hero) => hero.dungeonX != null && hero.dungeonY != null)
+          .sort((a, b) => Math.abs(a.dungeonX! - monster.x) + Math.abs(a.dungeonY! - monster.y)
+            - Math.abs(b.dungeonX! - monster.x) - Math.abs(b.dungeonY! - monster.y))
+          .slice(0, 3);
+        const routes = nearbyHunters.flatMap((hero) => {
+          if (hero.dungeonX == null || hero.dungeonY == null) return [];
+          return [[1, 0], [-1, 0], [0, 1], [0, -1]].flatMap(([dx, dy]) => {
+            const x = hero.dungeonX! + dx, y = hero.dungeonY! + dy;
+            if (cellBlocked(x, y) || walkable.has(occupiedKey(x, y))) return [];
+            const path = pathBetween(monster.x, monster.y, x, y, walkable);
+            return path.length ? [{ hero, path }] : [];
+          });
+        });
+        routes.sort((a, b) => a.path.length - b.path.length);
+        const route = routes[0];
+        if (route) {
+          const next = route.path[0];
+          occupied.delete(occupiedKey(monster.x, monster.y));
+          occupied.add(occupiedKey(next.x, next.y));
+          monster.x = next.x; monster.y = next.y;
+          await prisma.dungeonTarget.update({ where: { id: monster.id }, data: { x: next.x, y: next.y } });
+          nearestHero = route.hero;
+          distance = Math.abs(nearestHero.dungeonX! - monster.x) + Math.abs(nearestHero.dungeonY! - monster.y);
+        }
+      }
+      if (distance > 1 || nearestHero.shield <= 0) continue;
+      const impact = monster.type === "BOSS" ? 5 : 2;
+      const shield = Math.max(0, nearestHero.shield - impact);
+      const worn = await prisma.gearPiece.findMany({ where: { heroId: nearestHero.id, shield: { gt: 0 } } });
+      for (const piece of worn) {
+        await prisma.gearPiece.update({ where: { id: piece.id }, data: { shield: Math.max(0, piece.shield - impact * 50) } });
+      }
+      const defeated = shield === 0;
+      combatEvents.push({ sequence: ++sequence, attacker: "MONSTER", heroId: nearestHero.id, heroClass: nearestHero.class,
+        targetId: monster.id, targetType: monster.type, kind: monster.type === "BOSS" ? "ember-sentinel" : "obsidian-beetle",
+        fromX: monster.x, fromY: monster.y, x: nearestHero.dungeonX!, y: nearestHero.dungeonY!,
+        damage: impact, destroyed: false, reward: 0, at: new Date(start + (t + 1) * GAME.TICK_MS).toISOString() });
+      if (combatEvents.length > 64) combatEvents.shift();
+      await prisma.hero.update({ where: { id: nearestHero.id }, data: {
+        shield, ...(defeated ? { status: "IDLE", dungeonX: null, dungeonY: null, staminaUsageUnits: 0, staminaRecoveryUnits: 0 } : {}),
+      } });
+      nearestHero.shield = shield;
+      if (defeated) {
+        occupied.delete(occupiedKey(nearestHero.dungeonX!, nearestHero.dungeonY!));
+        nearestHero.dungeonX = null; nearestHero.dungeonY = null;
       }
     }
   }
@@ -292,20 +393,17 @@ async function advanceDungeon(userId: string) {
     data: { lastTickAt, wave, waveTotal, openedCrates: { increment: openedCrates }, combatSequence: sequence, combatEvents: combatEvents as unknown as Prisma.InputJsonValue },
   });
 
-  if (goldEarned > 0) {
-    await prisma.$transaction([
-      prisma.user.update({
-        where: { id: userId },
-        data: { chest: { increment: goldEarned } },
-      }),
-      prisma.rewardLog.create({
-        data: {
-          userId,
-          amount: goldEarned,
-          source: `hunt:${rewardSources.slice(0, 20).join(",")}`,
-        },
-      }),
-    ]);
+  if (goldEarned > 0 || bossDefeats.length) {
+    await prisma.$transaction(async tx => {
+      if (goldEarned > 0) {
+        await tx.user.update({ where: { id: userId }, data: { chest: { increment: goldEarned } } });
+        await tx.rewardLog.create({ data: { userId, amount: goldEarned, source: `hunt:${rewardSources.slice(0, 20).join(",")}` } });
+      }
+      if (bossDefeats.length) await tx.playerMail.createMany({ data: bossDefeats.map(id => ({
+        userId, sourceKey: `boss:${id}`, title: "The Sentinel has fallen",
+        body: "Your party defeated an Ember Sentinel. Open this hero card as a reward for the hunt.", mintCards: 1,
+      })), skipDuplicates: true });
+    });
   }
 
   await recoverStamina(userId, new Date(now));
@@ -386,6 +484,9 @@ export async function deployHero(userId: string, heroId: string) {
   if (hero.stamina <= 0) {
     throw Object.assign(new Error("Hero has no stamina"), { statusCode: 400 });
   }
+  if (hero.shield <= 0) {
+    throw Object.assign(new Error("Repair this hero's shield before hunting"), { statusCode: 400 });
+  }
 
   const occupied = new Set<string>();
   for (const t of run.targets) occupied.add(occupiedKey(t.x, t.y));
@@ -416,7 +517,7 @@ export async function deployHero(userId: string, heroId: string) {
   return buildSnapshot(userId);
 }
 
-export async function deployAllIdle(userId: string) {
+export async function deployAllIdle(userId: string, mode: "all" | "over-half" = "all") {
   const {GAME}=await runtimeRules();
   await processTicks(userId);
   const run = await getActiveRun(userId);
@@ -424,9 +525,9 @@ export async function deployAllIdle(userId: string) {
     throw Object.assign(new Error("No active dungeon"), { statusCode: 400 });
   }
 
-  const idle = await prisma.hero.findMany({
-    where: { userId, status: "IDLE", stamina: { gt: 0 } },
-  });
+  const idle = (await prisma.hero.findMany({
+    where: { userId, status: "IDLE", stamina: { gt: 0 }, shield: { gt: 0 } },
+  })).filter(hero => mode === "all" || hero.stamina > hero.maxStamina / 2);
 
   let working = await prisma.hero.count({
     where: { userId, status: "HUNTING" },

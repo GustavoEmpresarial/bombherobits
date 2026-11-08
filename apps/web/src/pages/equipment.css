@@ -1,0 +1,27 @@
+.equipment-panel{margin-top:28px;padding:24px;background:linear-gradient(140deg,#1b2636,#111b29);border-top:3px solid #e8ac56}
+.equipment-head,.equipment-section-head{display:flex;justify-content:space-between;align-items:end;gap:20px;margin-bottom:18px}
+.equipment-head small,.equipment-section-head small{color:#81cbd9;letter-spacing:.15em;font-size:10px}
+.equipment-head h2,.equipment-section-head h3{margin:6px 0;font-size:25px;color:#ffe1a8}
+.equipment-head p,.equipment-section-head p{margin:0;color:#a9bac9;font-size:13px}
+.equipment-head>span{color:#e8bb6b;white-space:nowrap;font-size:12px}
+.equipment-boxes{display:grid;grid-template-columns:repeat(5,minmax(120px,1fr));gap:12px;margin-bottom:28px}
+.equipment-boxes button{min-height:145px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;background:radial-gradient(circle at 50% 25%,color-mix(in srgb,var(--gear-color) 22%,#172231),#131c2a 75%);border:2px solid var(--gear-color);color:#f7eee2;box-shadow:4px 4px 0 #080d16;cursor:pointer;font:inherit}
+.equipment-boxes button:hover:not(:disabled){transform:translateY(-3px);box-shadow:4px 7px 0 #080d16}
+.equipment-boxes button:disabled,.equipment-card-actions button:disabled,.equipment-craft button:disabled{opacity:.45;cursor:not-allowed}
+.equipment-boxes img{width:68px;height:68px;image-rendering:pixelated;filter:drop-shadow(0 0 12px var(--gear-color))}
+.equipment-boxes strong{color:var(--gear-color);font-size:15px}.equipment-boxes small{font-size:11px;color:#c2ccd4}
+.equipment-section-head{border-top:1px solid #3d5669;padding-top:20px}.equipment-section-head label{color:#8eb3c5;font-size:10px;letter-spacing:.1em}
+.equipment-section-head select{display:block;margin-top:5px;background:#172435;color:#e9e4d8;border:1px solid #507285;padding:8px 10px;font:inherit}
+.equipment-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(225px,1fr));gap:12px}
+.equipment-card{position:relative;display:flex;flex-direction:column;align-items:start;gap:5px;padding:14px;background:#172232;border:2px solid #395267;box-shadow:3px 3px 0 #0b101a;color:#e9e5dd}
+.equipment-card.picked{border-color:var(--gear-color);background:#202a3e}.equipment-card-art{width:72px;height:72px;align-self:center;image-rendering:pixelated;filter:drop-shadow(0 0 10px var(--gear-color))}
+.equipment-card>strong{color:var(--gear-color);font-size:16px}.equipment-card>span{color:#c8d5de;font-size:12px}
+.equipment-select{position:absolute;top:8px;right:8px;border:1px solid var(--gear-color);background:#111c2a;color:var(--gear-color);width:28px;height:28px;font-weight:bold;cursor:pointer}
+.equipment-shield{width:100%;margin-top:5px}.equipment-shield small{font-size:10px;color:#a7bdca}.equipment-shield>div{height:8px;background:#0a131d;border:1px solid #46606d;margin-top:4px}.equipment-shield i{display:block;height:100%;background:linear-gradient(90deg,#5cc3b5,#a2efc6)}
+.equipment-owner{color:#8ca8ba;font-size:9px;letter-spacing:.08em;min-height:14px}.equipment-card-actions{display:flex;gap:6px;width:100%;margin-top:auto}
+.equipment-card-actions button,.equipment-craft button{background:#244357;color:#f7e6cb;border:1px solid #79a7b2;padding:8px 10px;font:inherit;font-size:11px;cursor:pointer}
+.equipment-card-actions button:first-child{background:#315f57;border-color:#74c2a1}.equipment-card-actions button:hover:not(:disabled),.equipment-craft button:hover:not(:disabled){filter:brightness(1.25)}
+.equipment-craft{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;border-top:1px solid #3d5669;margin-top:22px;padding-top:18px;color:#ecd9b5;font-size:12px}
+.equipment-craft>div{display:flex;gap:8px}.equipment-craft small{width:100%;color:#9eafbb}.equipment-empty{padding:30px;text-align:center;color:#9eafbb;border:1px dashed #476174}
+.equipment-notice{padding:10px;background:#214c42;border:1px solid #4fad85;color:#cbf2d3}
+@media(max-width:850px){.equipment-boxes{grid-template-columns:repeat(auto-fit,minmax(125px,1fr))}.equipment-head,.equipment-section-head{align-items:start;flex-direction:column}}

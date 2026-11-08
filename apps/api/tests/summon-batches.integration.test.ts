@@ -15,7 +15,7 @@ async function player(check:(id:string)=>Promise<void>,configure?:(config:Runtim
  process.env.HEROBITS_CONFIG_ID=id;
  const config=structuredClone(DEFAULT_CONFIG);configure?.(config);
  await prisma.runtimeSettings.create({data:{id,data:config}});
- const user=await prisma.user.create({data:{wallet:"summon-test-"+randomUUID(),displayName:"Temporary summon test",gold:10000,mintCards:20}});
+ const user=await prisma.user.create({data:{wallet:"demo:summon-test-"+randomUUID(),displayName:"Temporary summon test",gold:10000,mintCards:20}});
  try{await check(user.id);}
  finally{await prisma.user.delete({where:{id:user.id}});await prisma.runtimeSettings.delete({where:{id}});if(previous===undefined)delete process.env.HEROBITS_CONFIG_ID;else process.env.HEROBITS_CONFIG_ID=previous;}
 }
@@ -89,7 +89,8 @@ test("invalid packs and insufficient rescue cards leave all balances unchanged",
 }));
 test("HTTP routes require login, reject forged heroes and deliver only after reveal plus claim",options,async()=>player(async id=>{
  const app=Fastify();await app.register(jwt,{secret:"temporary-summon-test-secret"});await app.register(summonRoutes);await app.ready();
- const headers={authorization:"Bearer "+app.jwt.sign({id})};
+ const wallet=(await prisma.user.findUniqueOrThrow({where:{id},select:{wallet:true}})).wallet;
+ const headers={authorization:"Bearer "+app.jwt.sign({id,wallet,demo:true})};
  try{
   assert.equal((await app.inject("/heroes/summons/pending")).statusCode,401);
   assert.equal((await app.inject({method:"POST",url:"/heroes/summon",headers,payload:{count:1,requestId:randomUUID(),rarity:"SUPER_LEGENDARY"}})).statusCode,400);
@@ -115,3 +116,16 @@ test("configured stamina is stored at purchase and preserved through later admin
  const claimed=await claimSummon(id,bought.batch.id);
  assert(claimed.heroes.every(hero=>hero.maxStamina===175&&hero.stamina===175));
 },config=>{config.stamina.energyPerPoint=25;for(const range of Object.values(config.stamina.rarityPoints)){range.min=7;range.max=7;}}));
+
+test("guaranteed rarity advances across purchases and idempotent retries do not advance twice",options,async()=>player(async id=>{
+ const firstKey=randomUUID();
+ const first=await purchaseSummon(id,10,"GOLD",firstKey);
+ assert.deepEqual(first.user.summonPity,{rare:10,superRare:10,epic:10});
+ const retry=await purchaseSummon(id,10,"GOLD",firstKey);
+ assert.deepEqual(retry.user.summonPity,first.user.summonPity);
+ const second=await purchaseSummon(id,5,"GOLD",randomUUID());
+ const revealed=await revealSummon(id,second.batch.id);
+ assert.deepEqual(revealed.cards?.map(card=>card.rarity),["COMMON","COMMON","COMMON","COMMON","RARE"]);
+ assert.deepEqual(second.user.summonPity,{rare:0,superRare:15,epic:15});
+ assert.equal((await prisma.user.findUniqueOrThrow({where:{id}})).summonPityRare,0);
+},config=>{config.heroes.rarityWeights={COMMON:100,RARE:0,SUPER_RARE:0,EPIC:0,LEGENDARY:0,SUPER_LEGENDARY:0};}));

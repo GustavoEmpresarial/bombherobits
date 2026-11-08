@@ -4,10 +4,14 @@ import { authenticate } from "../lib/auth.js";
 import {
   buyBlacksmith,
   buyListing,
+  cancelListing,
   buyPorter,
   listForSale,
   redeemInvite,
   setBlacksmithService,
+  setForgeAssignment,
+  setShieldRepair,
+  setShieldRepairRarity,
   togglePorter,
   withdrawChest,
   worldState,
@@ -43,6 +47,16 @@ export async function worldRoutes(app: FastifyInstance) {
     }
   });
 
+  app.post("/blacksmiths/forge", { preHandler: authenticate }, async (request, reply) => {
+    const parsed = z.object({ heroId: z.string().min(1), assigned: z.boolean() }).safeParse(request.body);
+    if (!parsed.success) return reply.code(400).send({ error: "Invalid forge assignment" });
+    try {
+      return await setForgeAssignment(request.user.id, parsed.data.heroId, parsed.data.assigned);
+    } catch (err) {
+      return sendError(err, reply);
+    }
+  });
+
   app.post("/porters/buy", { preHandler: authenticate }, async (request, reply) => {
     try {
       return await buyPorter(request.user.id);
@@ -57,6 +71,20 @@ export async function worldRoutes(app: FastifyInstance) {
     } catch (err) {
       return sendError(err, reply);
     }
+  });
+
+  app.post("/porters/shield-repair", { preHandler: authenticate }, async (request, reply) => {
+    const parsed = z.object({ enabled: z.boolean() }).safeParse(request.body);
+    if (!parsed.success) return reply.code(400).send({ error: "Invalid shield repair setting" });
+    try { return await setShieldRepair(request.user.id, parsed.data.enabled); }
+    catch (err) { return sendError(err, reply); }
+  });
+
+  app.post("/porters/shield-repair/rarity", { preHandler: authenticate }, async (request, reply) => {
+    const parsed = z.object({ rarity: z.enum(["COMMON", "RARE", "SUPER_RARE", "EPIC", "LEGENDARY", "SUPER_LEGENDARY"]), enabled: z.boolean() }).safeParse(request.body);
+    if (!parsed.success) return reply.code(400).send({ error: "Invalid shield repair rarity" });
+    try { return await setShieldRepairRarity(request.user.id, parsed.data.rarity, parsed.data.enabled); }
+    catch (err) { return sendError(err, reply); }
   });
 
   app.post("/market/list", { preHandler: authenticate }, async (request, reply) => {
@@ -85,6 +113,16 @@ export async function worldRoutes(app: FastifyInstance) {
     if (!parsed.success) return reply.code(400).send({ error: "Invalid id" });
     try {
       return await buyListing(request.user.id, parsed.data.id);
+    } catch (err) {
+      return sendError(err, reply);
+    }
+  });
+
+  app.post("/market/cancel", { preHandler: authenticate }, async (request, reply) => {
+    const parsed = z.object({ id: z.string().min(1) }).safeParse(request.body);
+    if (!parsed.success) return reply.code(400).send({ error: "Invalid id" });
+    try {
+      return await cancelListing(request.user.id, parsed.data.id);
     } catch (err) {
       return sendError(err, reply);
     }

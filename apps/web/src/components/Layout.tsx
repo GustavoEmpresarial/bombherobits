@@ -12,6 +12,10 @@ const panels: Record<string, [string, string]> = {
   "/shop/porter": ["PORTER", "/shop"], "/market": ["MARKET", "/"],
   "/invites": ["INVITES", "/"], "/chest": ["CHEST", "/"],
   "/withdraw": ["REWARD TRANSFER", "/chest"], "/settings": ["SETTINGS", "/"],
+  "/fusion": ["FUSION", "/"],
+  "/ranking": ["RANKING", "/"],
+  "/stake": ["STAKE", "/"],
+  "/armory": ["ARMORY", "/shop"], "/mail": ["MAIL", "/"],
 };
 // One art family keeps the HUD and shortcut dock visually consistent.
 const shortcuts = [
@@ -20,6 +24,7 @@ const shortcuts = [
   { to: "/shop/summon", image: "/ui/v2/summon.webp", label: "Summon", caption: "SUMMON" },
   { to: "/shop/blacksmiths", image: "/ui/v2/houses.webp", label: "Recovery houses", caption: "HOUSES" },
   { to: "/shop/porter", image: "/ui/v2/porter.webp", label: "Porter", caption: "PORTER" },
+  { to: "/fusion", image: "/shop/fusion-altar.png", label: "Fusion", caption: "FUSION" },
   { to: "/shop", image: "/ui/v2/shop.webp", label: "Shop", caption: "SHOP" },
   { to: "/invites", image: "/ui/v2/invite.webp", label: "Invites", caption: "INVITES" },
 ] as const;
@@ -47,6 +52,7 @@ export function Layout() {
         {!hunt && <Link to="/invites" className="top-btn invite-btn"><img className="hud-art" src="/ui/v2/invite.webp" alt="" /><span className="invite-label">INVITE</span></Link>}
         {hunt && <HuntingRewards amount={user?.chest ?? 0} />}
         <Link to="/chest" className={`mhdg-chip${hunt ? " hunt-balance-chip" : ""}`} aria-label="Balance and rewards"><img className="hud-coin" src="/ui/v2/coin.webp" alt="" /><span className={`header-balance-copy${hunt ? " hunt-balance-copy" : ""}`}><small>GAME BALANCE</small><strong>{gold}<span>MHDG</span></strong></span></Link>
+        <Link to="/mail" className="top-btn mail-btn" aria-label="Mail" title="Mail and rewards"><span className="pixel-envelope" aria-hidden="true">✉</span></Link>
         <Link to="/chest" className="top-btn chest-btn hud-art-button" aria-label="Open chest" title="Chest and hero cards"><img className="hud-art" src="/ui/v2/chest.webp" alt="" />{(user?.mintCards ?? 0) > 0 && <span className="chest-badge" aria-label={`${user?.mintCards} hero cards`}>{(user?.mintCards ?? 0) > 99 ? "99+" : user?.mintCards}</span>}</Link>
         <Link to="/settings" className="top-btn hud-art-button settings-btn" aria-label="Settings" title="Settings"><img className="hud-art" src="/ui/v2/settings.webp" alt="" /></Link>
       </div>

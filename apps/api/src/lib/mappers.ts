@@ -1,5 +1,6 @@
 import type { Hero, User } from "@prisma/client";
 import type { HeroDto, UserDto } from "@herobits/shared";
+import { HERO_SKILLS, type HeroSkill } from "@herobits/shared";
 import { Decimal } from "@prisma/client/runtime/library";
 
 export function toGold(value: Decimal | number | string): number {
@@ -19,8 +20,12 @@ export function toUserDto(user: User): UserDto {
     gold: toGold(user.gold),
     chest: toGold(user.chest),
     mintCards: user.mintCards,
+    scrap: user.scrap,
+    summonPity: { rare: user.summonPityRare, superRare: user.summonPitySuperRare, epic: user.summonPityEpic },
     inviteCode: user.inviteCode ?? "",
     porterOn: user.porterOn,
+    shieldRepairOn: user.shieldRepairOn,
+    shieldRepairRarities: user.shieldRepairRarities,
   };
 }
 
@@ -34,6 +39,11 @@ export function toHeroDto(hero: Hero): HeroDto {
     spd: hero.spd,
     stamina: hero.stamina,
     maxStamina: hero.maxStamina,
+    shield: hero.shield,
+    shieldMax: hero.shieldMax,
+    shieldLevel: hero.shieldLevel,
+    skills: Array.isArray(hero.skills) ? hero.skills.filter((value): value is HeroSkill => typeof value === "string" && HERO_SKILLS.includes(value as HeroSkill)) : [],
+    forgeMode: hero.forgeMode as HeroDto["forgeMode"],
     status: hero.status,
     dungeonX: hero.dungeonX,
     dungeonY: hero.dungeonY,

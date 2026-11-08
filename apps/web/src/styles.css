@@ -348,6 +348,10 @@ a {
   --glow: #6ee06a;
   --glow-deep: #2f8a3a;
 }
+.mode-scrap {
+  --glow: #6fe7cf;
+  --glow-deep: #207f74;
+}
 .mode-market {
   --glow: #ffd447;
   --glow-deep: #b8860f;
@@ -435,6 +439,10 @@ a {
 .art-dungeon {
   background: radial-gradient(75% 60% at 50% 42%, #ff9a3c5c, #0b0d12 78%);
 }
+.lobby-beetle{position:absolute;z-index:2;left:9%;top:3%;width:82%;height:70%;object-fit:contain;image-rendering:pixelated;filter:drop-shadow(0 5px 2px #0009);animation:lobby-beetle-bob 2.1s steps(4,end) infinite alternate}
+.art-dungeon .card-art-crates{align-items:flex-end;padding-bottom:9%;transform:scale(.67);transform-origin:bottom center}
+@keyframes lobby-beetle-bob{to{transform:translateY(-5px)}}
+@media(prefers-reduced-motion:reduce){.lobby-beetle{animation:none}}
 .art-shop,
 .art-summon {
   background: radial-gradient(65% 55% at 50% 45%, #b57cff73, #0b0d12 75%);
@@ -805,6 +813,34 @@ a {
 .coming-soon .page-panel-title {
   color: #ffd447;
 }
+.stake-page { display: grid; place-items: center; min-height: min(68vh, 650px); }
+.stake-announcement { width: min(100%, 650px); padding: 65px 40px 55px; --accent: #f4c769; }
+.stake-announcement .page-panel-text { max-width: 430px; margin: 0 auto 12px; }
+.stake-announcement .cta { margin-top: 10px; }
+.stake-mark { color: #f4c769; font: 64px var(--font-display); text-shadow: 0 0 24px #f3ba58; }
+.lobby-extra-links { position: relative; z-index: 2; display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; margin: -45px auto 65px; }
+.lobby-extra-links .lobby-ranking-link { margin: 0; }
+.lobby-extra-links small { color: #91abb8; font: 9px var(--font-ui); letter-spacing: 1px; }
+@media (max-width: 700px) { .lobby-extra-links { margin: 0 auto 95px; } }
+.forge-management { max-width: 1180px; margin: 20px auto 28px; padding: 24px; --accent: #6fdad0; }
+.forge-management-heading { display: flex; justify-content: space-between; align-items: end; gap: 16px; }
+.forge-management-heading small { color: #8bb4bb; font: 10px var(--font-ui); letter-spacing: 1.5px; }
+.forge-management-heading h3 { color: #ffe2ad; font: 25px var(--font-display); margin: 8px 0 0; }
+.forge-management-heading > strong { color: #8ae3d5; font: 27px var(--font-display); }
+.forge-management > p { color: #a5bbc9; font: 12px/1.6 var(--font-ui); }
+.forge-hero-list { display: grid; gap: 8px; max-height: 340px; overflow: auto; padding: 4px; }
+.forge-hero-row { display: grid; grid-template-columns: 52px minmax(0, 1fr) auto; align-items: center; gap: 14px; min-height: 72px; padding: 6px 12px; background: #142331; border: 1px solid #364e5c; }
+.forge-hero-row[data-inside="true"] { border-color: #67c8bd; background: #1a343c; }
+.forge-hero-art { position: relative; width: 50px; height: 50px; display: grid; place-items: center; overflow: hidden; }
+.forge-hero-art .hero-party-sprite { transform: translate(calc(-50% + var(--sprite-center-x, 0px)), calc(-50% + var(--sprite-center-y, 0px))) scale(.52); }
+.forge-hero-copy { display: grid; gap: 4px; min-width: 0; }
+.forge-hero-row strong { color: #f4e7ce; font: 17px var(--font-display); }
+.forge-hero-row strong small { color: #88a6b8; font: 9px var(--font-ui); }
+.forge-hero-copy > span { color: #9ab9c2; font: 11px var(--font-ui); }
+.forge-hero-actions { display: flex; gap: 7px; }
+.forge-hero-row button { min-width: 72px; padding: 8px 10px; font-size: 12px; }
+.forge-empty { padding: 20px; color: #a5bbc9; }
+@media (max-width: 700px) { .forge-management { padding: 18px 12px; } .forge-hero-row { gap: 7px; padding: 6px; } .forge-hero-row button { min-width: 70px; } }
 
 .art-ground {
   position: absolute;

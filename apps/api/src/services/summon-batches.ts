@@ -1,15 +1,17 @@
 import type { Prisma, SummonBatch, SummonSource } from "@prisma/client";
-import { HERO_RARITIES, type SummonBatchDto, type SummonCardDto } from "@herobits/shared";
+import { HERO_RARITIES, HERO_SKILLS, advanceSummonPity, shieldCapacity, type SummonBatchDto, type SummonCardDto, type SummonPity } from "@herobits/shared";
 import { z } from "zod";
 import { prisma } from "../lib/prisma.js";
 import { toGold, toHeroDto, toUserDto } from "../lib/mappers.js";
 import { getConfig } from "./config.js";
-import { rollHero } from "./summon.js";
+import { heroStats, rollHero } from "./summon.js";
 import { processTicks } from "./dungeon.js";
+import { rollHeroSkills } from "./hero-skills.js";
 
 const rollSchema=z.object({
  class:z.enum(["WARRIOR","MAGE","ROGUE"]),rarity:z.enum(HERO_RARITIES),
  atk:z.number().int().positive(),spd:z.number().int().positive(),maxStamina:z.number().int().positive(),
+ skills:z.array(z.enum(HERO_SKILLS)).optional(),
 });
 const fail=(message:string,statusCode=400)=>Object.assign(new Error(message),{statusCode});
 function cards(batch:SummonBatch):SummonCardDto[]{
@@ -53,11 +55,18 @@ export async function purchaseSummon(userId:string,count:number,source:SummonSou
   const cost=source==="GOLD"?Math.round(config.heroes.summonCost*count*100)/100:0;
   if(source==="GOLD"&&toGold(user.gold)<cost)throw fail("Not enough gold");
   if(source==="CARDS"&&user.mintCards<count)throw fail("Not enough mint cards");
+  let pity: SummonPity = {rare:user.summonPityRare,superRare:user.summonPitySuperRare,epic:user.summonPityEpic};
   const rolls=Array.from({length:count},()=>{
-   const {class:heroClass,rarity,atk,spd,maxStamina}=rollHero(config);
-   return {class:heroClass,rarity,atk,spd,maxStamina};
+   const {class:heroClass,rarity:rolled}=rollHero(config);
+   const result=advanceSummonPity(rolled,pity);
+   pity=result.pity;
+   const {atk,spd,maxStamina}=heroStats(heroClass,result.rarity,config);
+   return {class:heroClass,rarity:result.rarity,atk,spd,maxStamina,skills:rollHeroSkills(result.rarity)};
   });
-  const updated=await tx.user.update({where:{id:userId},data:source==="GOLD"?{gold:{decrement:cost}}:{mintCards:{decrement:count}}});
+  const updated=await tx.user.update({where:{id:userId},data:{
+   ...(source==="GOLD"?{gold:{decrement:cost}}:{mintCards:{decrement:count}}),
+   summonPityRare:pity.rare,summonPitySuperRare:pity.superRare,summonPityEpic:pity.epic,
+  }});
   const batch=await tx.summonBatch.create({data:{userId,source,count,cost,requestKey,rolls:rolls as unknown as Prisma.InputJsonValue}});
   if(source==="GOLD")await tx.rewardLog.create({data:{userId,amount:-cost,source:"summon-pack:"+batch.id}});
   return {batch:batchDto(batch),user:toUserDto(updated)};
@@ -80,7 +89,8 @@ export async function claimSummon(userId:string,batchId:string){
    const rows=cards(batch);
    await tx.hero.createMany({data:rows.map(row=>({
     userId,summonBatchId:batch.id,summonSlot:row.slot,class:row.class,rarity:row.rarity,atk:row.atk,spd:row.spd,
-    maxStamina:row.maxStamina,stamina:row.maxStamina,status:"IDLE" as const,
+    maxStamina:row.maxStamina,stamina:row.maxStamina,shield:shieldCapacity(row.rarity),shieldMax:shieldCapacity(row.rarity),status:"IDLE" as const,
+    skills:row.skills ?? rollHeroSkills(row.rarity),
    }))});
    await tx.summonBatch.update({where:{id:batch.id},data:{status:"CLAIMED",claimedAt:new Date()}});
   }

@@ -1,10 +1,11 @@
 import type { FastifyInstance } from "fastify";
 import { randomBytes } from "node:crypto";
-import type { HeroClass, HeroRarity } from "@herobits/shared";
+import { shieldCapacity, type HeroClass, type HeroRarity } from "@herobits/shared";
 import { prisma } from "../lib/prisma.js";
 import { toUserDto } from "../lib/mappers.js";
 import { getConfig } from "../services/config.js";
 import { heroStats } from "../services/summon.js";
+import { rollHeroSkills } from "../services/hero-skills.js";
 
 export async function demoRoutes(app: FastifyInstance) {
   const attempts = new Map<string, { count: number; expires: number }>();
@@ -22,7 +23,7 @@ export async function demoRoutes(app: FastifyInstance) {
       displayName: "Demo Adventurer",
       gold: 100000, chest: 5000, mintCards: 15,
       inviteCode: `de${randomBytes(8).toString("hex")}`,
-      heroes: { create: rarities.flatMap(rarity => classes.map(heroClass => ({ class: heroClass, rarity, ...heroStats(heroClass, rarity, config) }))) },
+      heroes: { create: rarities.flatMap(rarity => classes.map(heroClass => ({ class: heroClass, rarity, shield: shieldCapacity(rarity), shieldMax: shieldCapacity(rarity), skills: rollHeroSkills(rarity), ...heroStats(heroClass, rarity, config) }))) },
     } });
     const token = app.jwt.sign({ id: user.id, wallet: user.wallet, demo: true }, { expiresIn: "24h" });
     return reply.header("Cache-Control", "no-store").send({ token, user: toUserDto(user) });

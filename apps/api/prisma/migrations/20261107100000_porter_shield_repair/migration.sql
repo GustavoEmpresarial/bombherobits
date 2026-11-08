@@ -1,0 +1,3 @@
+ALTER TABLE "User"
+  ADD COLUMN "shieldRepairOn" BOOLEAN NOT NULL DEFAULT false,
+  ADD COLUMN "shieldRepairRarities" "HeroRarity"[] NOT NULL DEFAULT ARRAY['COMMON', 'RARE', 'SUPER_RARE', 'EPIC', 'LEGENDARY', 'SUPER_LEGENDARY']::"HeroRarity"[];

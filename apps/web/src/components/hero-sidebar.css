@@ -32,6 +32,9 @@
 .hero-party-action:disabled { color: #8093a3; background: #223342; border-color: #3c5263; cursor: not-allowed; }
 .hero-sidebar-bulk .hero-party-action { height: 38px; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 23px; }
 .hero-sidebar-bulk .hero-party-action span { font: 11px var(--font-ui); opacity: .8; }
+.hero-sidebar-work-mode { display: flex; gap: 5px; margin: -2px 17px 10px; }
+.hero-sidebar-work-mode button { flex: 1; min-width: 0; padding: 5px; border: 1px solid #38566a; background: #172a3a; color: #8faebb; font: 10px var(--font-ui); cursor: pointer; }
+.hero-sidebar-work-mode button[aria-pressed="true"] { border-color: #7ac9c1; color: #d6f2e8; background: #245058; }
 .hero-sidebar-filters { display: flex; flex-shrink: 0; gap: 5px; margin: 0 12px; padding: 11px 3px; border-top: 1px solid #3a5669; }
 .hero-sidebar-filters button { flex: 1; padding: 7px 3px; background: transparent; border: 1px solid transparent; color: #9cb3c4; font: 12px var(--font-ui); }
 .hero-sidebar-filters button span { font-size: 10px; margin-left: 3px; opacity: .8; }
@@ -50,6 +53,14 @@
 .hero-party-meta > span { font: 9px var(--font-ui); color: var(--hero-rarity); letter-spacing: .4px; }
 .hero-party-meta small { font: 9px var(--font-ui); color: #9bb2c2; }
 .hero-party-stamina { height: 7px; margin-top: 8px; padding: 1px; border: 1px solid #476070; background: #07111b; }
+.hero-party-vital { display:flex;justify-content:space-between;gap:4px;margin-top:7px;color:#87dacf;font:9px/1.2 var(--font-ui);font-variant-numeric:tabular-nums; }
+.hero-party-vital b { color:#d3f5eb;font-weight:600; }
+.hero-party-vital-energy { color:#bdad92;margin-top:5px; }
+.hero-party-vital-energy b { color:#e6d7b5; }
+.hero-party-shield { height:9px;margin-top:4px;padding:1px;border:1px solid #468477;background:#07111b; }
+.hero-party-shield > span { display:block;height:100%;background:linear-gradient(90deg,#32b69f,#98efcd);transition:width 300ms linear; }
+.hero-party-shield[data-broken="true"] { border-color:#b45454; }
+.hero-party-shield[data-broken="true"] > span { background:#e77b6d; }
 .hero-party-stamina > span { display: block; height: 100%; background: #8ccfa8; transition: width 300ms linear; }
 .hero-party-stamina[data-low="true"] > span { background: #e8b65f; }
 .hero-party-energy { display: flex; justify-content: space-between; align-items: center; gap: 4px; margin-top: 4px; font: 9px/1.4 var(--font-ui); color: #aac1cf; font-variant-numeric: tabular-nums; }
@@ -72,6 +83,7 @@
 .hero-sidebar-footer > span { color: #89a7ba; font: 10px var(--font-ui); }
 .hero-sidebar-footer a { color: #99d8d3; font: 11px var(--font-pixel); letter-spacing: .7px; }
 .hero-sidebar-footer a:hover { color: #d4f5e8; }
+.hero-sidebar-footer > div { display:flex;gap:18px;justify-content:center;flex-wrap:wrap; }
 .hero-sidebar button:focus-visible, .hero-sidebar a:focus-visible { outline: 2px solid #b7f3e5; outline-offset: 3px; }
 .hunt-heroes-error { position: absolute; top: 116px; left: 26px; max-width: calc(100% - 80px); }
 @media (max-width: 1100px) and (min-width: 701px) {
@@ -106,7 +118,7 @@
   .hero-sidebar-footer { padding-block: 9px; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .hero-sidebar, .screen-hunt .map-frame, .screen-hunt .hunt-overlay, .hero-party-stamina > span { transition: none; }
+  .hero-sidebar, .screen-hunt .map-frame, .screen-hunt .hunt-overlay, .hero-party-stamina > span, .hero-party-shield > span { transition: none; }
 }
 
 /* The arena drawer is the single hero collection, with full-size animated sprites. */

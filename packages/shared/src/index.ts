@@ -1,7 +1,10 @@
+import type { HeroSkill } from "./gear.js";
+
 export type HeroClass = "WARRIOR" | "MAGE" | "ROGUE";
 export type HeroRarity = "COMMON" | "RARE" | "SUPER_RARE" | "EPIC" | "LEGENDARY" | "SUPER_LEGENDARY";
 export type HeroStatus = "IDLE" | "HUNTING" | "LISTED";
-export type TargetType = "SLIME" | "BLOCK";
+export type TargetType = "SLIME" | "BLOCK" | "MONSTER" | "BOSS";
+export type TargetKind = import("./config.js").LootKind | "obsidian-beetle" | "ember-sentinel";
 export type DungeonRunStatus = "ACTIVE" | "ENDED";
 
 export const KEEP = {
@@ -127,6 +130,8 @@ export const TARGET_STATS: Record<
 > = {
   SLIME: { maxHp: 40, goldReward: 2.5 },
   BLOCK: { maxHp: 80, goldReward: 5 },
+  MONSTER: { maxHp: 97, goldReward: 12 },
+  BOSS: { maxHp: 500, goldReward: 150 },
 };
 
 export interface HeroDto {
@@ -138,13 +143,18 @@ export interface HeroDto {
   spd: number;
   stamina: number;
   maxStamina: number;
+  shield: number;
+  shieldMax: number;
+  shieldLevel: number;
+  skills: HeroSkill[];
+  forgeMode: "AUTO" | "PINNED" | "EXCLUDED";
   status: HeroStatus;
   dungeonX: number | null;
   dungeonY: number | null;
 }
 
 export interface TargetDto {
-  kind?: import("./config.js").LootKind;
+  kind?: TargetKind;
   id: string;
   type: TargetType;
   hp: number;
@@ -155,11 +165,12 @@ export interface TargetDto {
 
 export interface DungeonCombatEvent {
   sequence: number;
+  attacker?: "HERO" | "MONSTER";
   heroId: string;
   heroClass: HeroClass;
   targetId: string;
   targetType: TargetType;
-  kind?: import("./config.js").LootKind;
+  kind?: TargetKind;
   fromX: number;
   fromY: number;
   x: number;
@@ -212,9 +223,24 @@ export interface UserDto {
   gold: number;
   chest: number;
   mintCards: number;
+  scrap: number;
+  summonPity: import("./summon-pity.js").SummonPity;
   inviteCode: string;
   porterOn: boolean;
+  shieldRepairOn: boolean;
+  shieldRepairRarities: HeroRarity[];
   displayName: string;
+}
+
+export interface PlayerMailDto {
+  id: string;
+  title: string;
+  body: string;
+  gold: number;
+  mintCards: number;
+  scrap: number;
+  claimedAt: string | null;
+  createdAt: string;
 }
 
 export interface AuthNonceResponse {
@@ -236,9 +262,13 @@ export type RuntimeVisualConfig = import("./config.js").RuntimeConfig["visual"];
 export { ARENA_THEMES, arenaTheme } from "./arena-themes.js";
 
 export { HERO_RARITIES, RARITY_INFO } from "./rarities.js";
-export type SummonCardDto = { slot:number; class:HeroClass; rarity:HeroRarity; atk:number; spd:number; maxStamina:number };
+export type SummonCardDto = { slot:number; class:HeroClass; rarity:HeroRarity; atk:number; spd:number; maxStamina:number; skills?:HeroSkill[] };
 export type SummonBatchDto = { id:string; requestId:string; source:"GOLD"|"CARDS"; status:"SEALED"|"REVEALED"|"CLAIMED"; count:number; createdAt:string; cards?:SummonCardDto[] };
 export type SummonPurchaseDto = { batch:SummonBatchDto; user:UserDto };
+export * from "./summon-pity.js";
 export type SummonClaimDto = { batchId:string; heroes:HeroDto[]; user:UserDto };
 export * from "./creators.js";
 export * from "./marketing.js";
+export * from "./fusion.js";
+export * from "./gear.js";
+export * from "./equipment.js";

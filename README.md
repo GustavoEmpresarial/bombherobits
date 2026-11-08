@@ -31,6 +31,8 @@ pnpm dev
 - Demo: http://localhost:5173/demo — all current game systems, test heroes and a separate virtual balance
 - Main-game authentication: Solana wallet signature, subject to the early-access gate. The public game remains closed until access is enabled and a wallet is approved.
 
+The [functional parity audit](docs/MINI-HERO-PARITY.md) tracks what has been implemented and what still needs verification against Mini Hero's authenticated screens. The demo is a working HeroBits game, not a claim of complete one-to-one parity.
+
 ## MVP features
 
 - Wallet login on Solana mainnet (nonce + signature)
@@ -49,6 +51,8 @@ The launch date and countdown visibility are managed by the private administrati
 Working heroes spend 4 stamina per minute: one point per 15 seconds of work. Fractional work time persists across resting, reactivation and server restarts, so repeated toggling cannot reset the consumption clock. Capacity is rolled by rarity: Common 50–150, Rare 150–300, Super Rare 300–450, Epic 450–600, Legend 600–750, Super Legend 750–900 energy. Each integer stamina stat point gives 50 energy. At 4 energy/minute, a full 100-energy hero works for about 25 minutes. These values are editable in the private admin Stamina section.
 
 Resting (`IDLE`) heroes recover automatically at 0.5 stamina per minute (1 point every 2 minutes), including time away from the game. The active blacksmith applies its shared `rate` per minute to its available `slots`; other resting heroes keep the base rate. As a hero fills up, its forge slot goes to the next resting hero. Hunting and market-listed heroes do not recover.
+
+The recovery-house screen lets players pin specific resting heroes to its slots or keep them outside. Free slots fill automatically. With the Porter enabled, the strongest resting heroes take priority in the house and manual changes pause until it is switched off. See [recovery-house rules](docs/RECOVERY-HOUSES.md).
 
 `REST` recalls a hero and starts gradual recovery; it no longer instantly refills stamina. Recovery uses a persisted server clock and integer fractional progress, so refreshes, rest clicks and multiple tabs cannot accelerate it. The arena streams updates, and the full collection refreshes every 2 seconds.
 

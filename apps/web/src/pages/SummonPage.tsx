@@ -1,9 +1,10 @@
 import { useEffect,useState } from "react";
-import { HERO_RARITIES,RARITY_INFO } from "@herobits/shared";
+import { EMPTY_SUMMON_PITY,HERO_RARITIES,RARITY_INFO,SUMMON_PITY_LIMITS } from "@herobits/shared";
 import { useRuntimeConfig } from "../state/RuntimeConfig";
 import { useAuth } from "../state/AuthContext";
 import { useSummons } from "../state/SummonContext";
 import { PendingSummonPacks } from "../components/PendingSummonPacks";
+import "./summon-pity.css";
 
 export function SummonPage(){
  const {GAME,RARITY_WEIGHTS,config}=useRuntimeConfig();
@@ -15,8 +16,19 @@ export function SummonPage(){
  const each=GAME.SUMMON_COST,total=Math.round(each*count*100)/100;
  const canPay=(user?.gold??0)>=total;
  const totalWeight=Object.values(RARITY_WEIGHTS).reduce((sum,value)=>sum+value,0);
+ const pity=user?.summonPity??EMPTY_SUMMON_PITY;
  return <section className="page" aria-label="SUMMON">
   <PendingSummonPacks/>
+  <section className="summon-pity page-panel" aria-label="Guaranteed hero rarities">
+   <div className="summon-pity-heading"><span>GUARANTEED HEROES</span><p>Every card advances the counters. A matching rarity resets its bar; Legend and Super Legend also reset Epic.</p></div>
+   <div className="summon-pity-grid">{([
+    ["rare","RARE"],["superRare","SUPER_RARE"],["epic","EPIC"],
+   ] as const).map(([key,rarity])=>{const current=pity[key],limit=SUMMON_PITY_LIMITS[key];return <div className="summon-pity-card" key={key} style={{"--pity-color":RARITY_INFO[rarity].color} as React.CSSProperties}>
+    <div><strong>{RARITY_INFO[rarity].name}</strong><span>{current} / {limit}</span></div>
+    <div className="summon-pity-track" role="progressbar" aria-label={`${RARITY_INFO[rarity].name} guarantee`} aria-valuemin={0} aria-valuemax={limit} aria-valuenow={current}><span style={{width:`${current/limit*100}%`}}/></div>
+    <small>{limit-current} {limit-current===1?"card":"cards"} to guarantee</small>
+   </div>;})}</div>
+  </section>
   <div className="summon-layout">
    <div className="summon-stage" aria-hidden><span className="summon-rays"/><span className="summon-deck"><img className="summon-cards" src="/shop/summon-cards.png" alt=""/><span className="art-gloss"/></span></div>
    <section className="page-panel summon-buy">

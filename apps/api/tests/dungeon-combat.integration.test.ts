@@ -25,7 +25,7 @@ test("ordinary hits keep the crate and do not increment opened count",options,as
 });
 test("the counter reaches zero before the next wave, without resetting the run",options,async context=>{
  let now=Date.now();context.mock.method(Date,"now",()=>now);
- await fixture(now,1,100,async(id,runId)=>{const empty=(await processTicks(id))!;assert.equal(empty.targets.length,0);assert.equal(empty.wave,1);assert.equal((await startDungeon(id))!.runId,runId);assert.equal((await buildSnapshot(id))!.targets.length,0);await prisma.hero.updateMany({where:{userId:id},data:{status:"IDLE",dungeonX:null,dungeonY:null}});now+=1000;const next=(await processTicks(id))!;assert.equal(next.wave,2);assert.equal(next.targets.length,60);assert.equal(next.waveTotal,60);assert.equal(next.openedCrates,1);assert.equal(next.runId,runId);});
+ await fixture(now,1,100,async(id,runId)=>{const empty=(await processTicks(id))!;assert.equal(empty.targets.length,0);assert.equal(empty.wave,1);assert.equal((await startDungeon(id))!.runId,runId);assert.equal((await buildSnapshot(id))!.targets.length,0);await prisma.hero.updateMany({where:{userId:id},data:{status:"IDLE",dungeonX:null,dungeonY:null}});now+=1000;const next=(await processTicks(id))!;assert.equal(next.wave,2);assert.equal(next.targets.filter(t=>t.type==="SLIME"||t.type==="BLOCK").length,60);assert.equal(next.targets.filter(t=>t.type==="MONSTER").length,2);assert.equal(next.waveTotal,60);assert.equal(next.openedCrates,1);assert.equal(next.runId,runId);});
 });
 test("long hunts retain only the latest 64 events with a monotonic sequence",options,async context=>{
  const now=Date.now();context.mock.method(Date,"now",()=>now);

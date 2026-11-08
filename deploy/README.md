@@ -2,9 +2,9 @@
 
 Current targets: http://5.189.157.88 and https://bombherobits.pro.
 
-Active release: 20261020-hero-carousel, deployed October 20, 2026. Production smoke tests passed for API health/configuration, closed login, closed whitelist, creator validation, PostgreSQL persistence, retry deduplication and private admin access. Disposable test records were removed. The existing domain and direct port 5000 returned their original BlockMiner pages after activation.
+Active release: 20261108-equipment, deployed November 8, 2026. The API and web images were built on the VM, the equipment inventory migration was applied after a database backup, and HTTPS health, site routes, bundled equipment UI, and authenticated-only equipment API were checked externally. The previous release is 20261107-mini-parity-2, which included the earlier Mini Hero parity work and demo session recovery after an old token expires.
 
-Initial database backup: /opt/herobits/shared/initial-deployment.dump. Edge proxy backup: /opt/herobits/shared/edge-nginx-before.conf. The current release symlink is /opt/herobits/current.
+Initial database backup: /opt/herobits/shared/initial-deployment.dump. Pre-update backups: /opt/herobits/shared/pre-20261107-mini-parity-1.dump and /opt/herobits/shared/pre-20261108-equipment.dump. Edge proxy backup: /opt/herobits/shared/edge-nginx-before.conf. The current release symlink is /opt/herobits/current.
 
 The application runs as a separate Docker Compose project, with its own PostgreSQL volume. The existing edge proxy routes the bare IP and bombherobits.pro on port 80 to this app. Other domain routes and the existing direct port 5000 service are preserved.
 

@@ -4,6 +4,12 @@ The recovery shop at `/shop/blacksmiths` (and `/demo/shop/blacksmiths`) now pres
 
 The artwork is original raster pixel art generated with the built-in ImageGen tool, saved under `apps/web/public/shop/houses/`. Actual alpha transparency was verified on all six PNGs. CSS adds chimney smoke, a flickering window light and floating crystal particles without moving the buildings. Animation pauses outside the viewport and respects reduced motion.
 
+## Recovery slots
+
+The active house has 4, 6, 8, 10, 12 or 14 slots by tier. Only idle heroes with missing stamina occupy them. Pinned heroes have first priority; any free slots fill automatically with other resting heroes, oldest first. Removing a hero marks them as excluded from house recovery while they still receive the base outdoor recovery rate. A fully restored hero frees their slot for the next resting hero. The choice persists on the `Hero.forgeMode` field (`AUTO`, `PINNED`, `EXCLUDED`). Selling a hero clears that choice so it never transfers to the buyer.
+
+`POST /blacksmiths/forge` accepts `{ "heroId": "...", "assigned": true | false }` and returns the refreshed world state. It requires an owned active house and an idle hero owned by the caller. The server checks capacity and rejects manual changes while an owned Porter is enabled. `GET /world` includes `forgeHeroIds` so the client shows actual occupants. When the Porter is on, the strongest resting heroes by attack × speed receive slot priority, including heroes previously excluded by a manual choice; switching it off restores the stored manual choices. Slot assignments and recovery are calculated on the server under the user's transaction lock.
+
 Visual names: Ember Nook, Copper Haven, Moonwell Lodge, Sunforge Hall, Starfall Retreat, Aurora Sanctuary. Runtime tier capacity, recovery rate and prices come from the server catalog. The shop, navigation and porter now use recovery-house language. The porter still needs one active house.
 
 ## Generation prompt set
@@ -22,3 +28,5 @@ Each of the six files was generated separately, with transparent_background=true
 ## Validation
 
 Frontend production build passes. Browser checks confirmed six loaded PNGs, running smoke animations on visible houses, paused animations off screen, sequential unlocking, purchase of the first two tiers, switching the active house to Copper Haven (6 slots, 5 stamina/min), and persistence after reload. The recovery house services and balance updates use the existing backend.
+
+Validation (2026-11-07): after buying Ember Nook in the isolated demo, a hero worked until its stamina fell from 50 to 47, then rested inside the house. Removing it changed the slot count from 1/4 to 0/4 and showed outdoor recovery; assigning it again restored 1/4. The recovery selection unit tests and all 66 QA database integration tests pass.

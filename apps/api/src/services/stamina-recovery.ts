@@ -1,4 +1,4 @@
-import { GAME } from "@herobits/shared";
+import { GAME, RARITY_INFO, type HeroRarity } from "@herobits/shared";
 
 // Integer credits preserve fractional stamina across frequent updates.
 export const RECOVERY_UNITS_PER_POINT = 120_000;
@@ -8,10 +8,25 @@ export type RecoveryHero = {
   maxStamina: number;
   staminaRecoveryUnits: number;
   createdAt: Date;
+  forgeMode?: string;
+  atk?: number;
+  spd?: number;
+  rarity?: HeroRarity;
+  shield?: number;
 };
 export type RecoveryForge = { slots: number; rate: number };
 
-export function advanceRecovery(heroes: RecoveryHero[], from: Date, to: Date, forge?: RecoveryForge, recoveryPerMinute:number = GAME.STAMINA_RECOVERY_PER_MINUTE) {
+export function selectForgeHeroes<T extends RecoveryHero>(heroes: T[], slots: number, porterOn = false): T[] {
+  return heroes.filter(hero => hero.stamina < hero.maxStamina)
+    .filter(hero => porterOn ? hero.shield === undefined || hero.shield > 0 : hero.forgeMode !== "EXCLUDED")
+    .sort((a, b) => porterOn
+      ? (RARITY_INFO[b.rarity ?? "COMMON"].rank - RARITY_INFO[a.rarity ?? "COMMON"].rank)
+        || (b.atk ?? 0) - (a.atk ?? 0) || a.createdAt.getTime() - b.createdAt.getTime() || a.id.localeCompare(b.id)
+      : Number(b.forgeMode === "PINNED") - Number(a.forgeMode === "PINNED") || a.createdAt.getTime() - b.createdAt.getTime() || a.id.localeCompare(b.id))
+    .slice(0, slots);
+}
+
+export function advanceRecovery(heroes: RecoveryHero[], from: Date, to: Date, forge?: RecoveryForge, recoveryPerMinute:number = GAME.STAMINA_RECOVERY_PER_MINUTE, porterOn = false) {
   const rows = heroes.map((hero) => ({ ...hero }));
   let cursor = from.getTime();
   const end = to.getTime();
@@ -26,7 +41,7 @@ export function advanceRecovery(heroes: RecoveryHero[], from: Date, to: Date, fo
       cursor = nextArrival;
       continue;
     }
-    const boosted = new Set(resting.slice(0, forge?.slots ?? 0).map((hero) => hero.id));
+    const boosted = new Set(forge ? selectForgeHeroes(resting, forge.slots, porterOn).map(hero => hero.id) : []);
     const rateOf = (hero: RecoveryHero) => boosted.has(hero.id) && forge ? Math.max(baseRate, forge.rate * 2) : baseRate;
     let step = nextArrival - cursor;
     for (const hero of resting) {

@@ -28,7 +28,10 @@ test('full demo persists gameplay, claims packs once, and cannot cross the live 
     const headers={authorization:`Bearer ${session.token}`};
     const call=async(url:string,payload?:unknown)=>{const result=await app.inject({method:payload===undefined?'GET':'POST',url,headers,...(payload===undefined?{}:{payload})});assert.equal(result.statusCode,200,result.body);return result.json();};
     assert.equal((await call('/me')).id,session.user.id);
-    assert.equal((await call('/heroes')).length,18);
+    const starters=await call('/heroes') as {rarity:string;skills:string[]}[];
+    assert.equal(starters.length,18);
+    const expectedSkills:Record<string,number>={COMMON:1,RARE:2,SUPER_RARE:3,EPIC:4,LEGENDARY:5,SUPER_LEGENDARY:6};
+    assert(starters.every(hero=>hero.skills.length===expectedSkills[hero.rarity]));
     assert.equal(await sessionHasAccess({id:session.user.id,wallet:session.user.wallet}),false,'demo flag is mandatory');
     assert.equal(await sessionHasAccess({id:session.user.id,wallet:'live-wallet',demo:true}),false);
     const run=await call('/dungeon/start',{});
@@ -47,7 +50,9 @@ test('full demo persists gameplay, claims packs once, and cannot cross the live 
     await call(`/heroes/summons/${batchId}/reveal`,{});
     await call(`/heroes/summons/${batchId}/claim`,{});
     await call(`/heroes/summons/${batchId}/claim`,{});
-    assert.equal((await call('/heroes')).length,23,'claim retry must not duplicate heroes');
+    const roster=await call('/heroes') as {rarity:string;skills:string[]}[];
+    assert.equal(roster.length,23,'claim retry must not duplicate heroes');
+    assert(roster.every(hero=>hero.skills.length===expectedSkills[hero.rarity]));
     assert.equal((await call('/heroes/summons/pending')).length,0);
     assert((await call('/chest/withdraw',{})).net>0);
     const live=await prisma.user.create({data:{wallet:`qa-live-${randomUUID()}`,displayName:'Disposable live boundary test',inviteCode:randomUUID(),gold:5000}});ids.push(live.id);

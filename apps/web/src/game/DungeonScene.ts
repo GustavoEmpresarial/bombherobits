@@ -9,6 +9,7 @@ import {
   type DungeonCombatEvent,
   type HeroDto,
   type TargetDto,
+  type TargetKind,
 } from "@herobits/shared";
 
 import { ARENA_RENDER_SCALE, LOOT_MATERIAL_FRAME, MATERIAL_REGIONS, paintArena, paintBarriers } from "./arena-materials";
@@ -20,10 +21,8 @@ import { CombatEventCursor } from "./combat-events";
 // Keep the existing admin scale baseline while using tightly cropped rendered assets.
 const CRATE_SCALE = (KEEP.CELL / 32) * 1.2;
 
-const CRATES = ["wooden-crate", "iron-crate", "gold-chest", "crystal-chest", "ancient-vault"] as const;
 const SKINS = ["aurek", "vesper", "cinder"] as const;
 
-type CrateKind = (typeof CRATES)[number];
 type Skin = (typeof SKINS)[number];
 
 function hash(id: string) {
@@ -35,7 +34,9 @@ function hash(id: string) {
   return h >>> 0;
 }
 
-function crateKind(target: TargetDto): CrateKind {
+function crateKind(target: TargetDto): TargetKind {
+  if (target.type === "MONSTER") return "obsidian-beetle";
+  if (target.type === "BOSS") return "ember-sentinel";
   if(target.kind)return target.kind;
   const n = hash(target.id) % 100;
   if (target.type === "BLOCK") {
@@ -82,8 +83,10 @@ export class DungeonScene extends Phaser.Scene {
       view: Phaser.GameObjects.Container;
       sprite: Phaser.GameObjects.Sprite;
       bar: Phaser.GameObjects.Graphics;
-      kind: CrateKind;
+      kind: TargetKind;
       index: number;
+      x: number;
+      y: number;
     }
   >();
   private torches: { sprite: Phaser.GameObjects.Sprite; light: Phaser.GameObjects.Sprite; phase: number }[] =
@@ -96,6 +99,8 @@ export class DungeonScene extends Phaser.Scene {
 
   preload() {
     this.load.image("arena-materials", "/dungeon/realistic/materials-atlas.png");
+    this.load.image("obsidian-beetle", "/monsters/obsidian-beetle.png");
+    this.load.image("ember-sentinel", "/monsters/ember-sentinel.png");
     for (const skin of SKINS) {
       for (const action of ["idle", "walk", "attack"]) this.load.image(`${skin}-${action}`, `/characters/${skin}-${action}.png`);
     }
@@ -109,6 +114,8 @@ export class DungeonScene extends Phaser.Scene {
     this.bakeKeep(arenaTheme(1));
     this.placeTorches();
     for (const skin of SKINS) for (const action of ["idle", "walk", "attack"]) this.textures.get(`${skin}-${action}`).setFilter(Phaser.Textures.FilterMode.NEAREST);
+    this.textures.get("obsidian-beetle").setFilter(Phaser.Textures.FilterMode.NEAREST);
+    this.textures.get("ember-sentinel").setFilter(Phaser.Textures.FilterMode.NEAREST);
     this.ready = true;
     if (this.pending) this.render(this.pending);
   }
@@ -120,6 +127,12 @@ export class DungeonScene extends Phaser.Scene {
       torch.light.setAlpha(0.4 + pulse);
     }
     if (!this.pending) return;
+    for (const crate of this.crates.values()) {
+      if (crate.kind !== "obsidian-beetle" && crate.kind !== "ember-sentinel") continue;
+      const position = projectArena(crate.root.x, crate.root.y);
+      crate.view.setPosition(position.x, position.y).setDepth(position.y + 2);
+      crate.sprite.setY(this.reducedMotion ? -2 : -2 + Math.sin(t * 7 + crate.index) * 1.2);
+    }
     for (const [id, actor] of this.heroes) {
       const hero = this.pending.heroes.find((h) => h.id === id);
       if (!hero || hero.dungeonX == null || hero.dungeonY == null) continue;
@@ -232,19 +245,32 @@ export class DungeonScene extends Phaser.Scene {
         const position = projectArena(root.x, root.y);
         const view = this.add.container(position.x, position.y).setScale(position.scale).setDepth(position.y);
         const shadow = this.add.ellipse(0, 3, 12, 3, 0x020303, 0.65);
-        const sprite = this.add.sprite(0, 0, "arena-materials", this.materialFrame(LOOT_MATERIAL_FRAME[kind]));
-        sprite.setOrigin(0.5, 0.5).setDisplaySize(lootDisplaySize(), lootDisplaySize());
+        const monster = kind === "obsidian-beetle" || kind === "ember-sentinel";
+        const boss = kind === "ember-sentinel";
+        const sprite = monster
+          ? this.add.sprite(0, -2, kind)
+          : this.add.sprite(0, 0, "arena-materials", this.materialFrame(LOOT_MATERIAL_FRAME[kind]));
+        sprite.setOrigin(0.5, 0.5).setDisplaySize(boss ? 42 : monster ? 32 : lootDisplaySize(), boss ? 36 : monster ? 22 : lootDisplaySize());
         const bar = this.add.graphics();
-        const glowColor = kind === "crystal-chest" ? 0x43daf4 : kind === "ancient-vault" ? 0xab63f5 : kind === "gold-chest" ? 0xffb735 : 0x54351d;
+        const glowColor = kind === "ember-sentinel" ? 0xff7436 : kind === "obsidian-beetle" || kind === "crystal-chest" ? 0x43daf4 : kind === "ancient-vault" ? 0xab63f5 : kind === "gold-chest" ? 0xffb735 : 0x54351d;
         const aura = this.add.sprite(0, 2, "arena-glow").setDisplaySize(20, 18).setTint(glowColor).setAlpha(kind === "wooden-crate" || kind === "iron-crate" ? 0.08 : 0.24).setBlendMode(Phaser.BlendModes.ADD);
         view.add([shadow, aura, sprite, bar]);
-        actor = { root, view, sprite, bar, kind, index };
+        actor = { root, view, sprite, bar, kind, index, x: target.x, y: target.y };
         this.crates.set(target.id, actor);
       }
-      const size = lootDisplaySize(this.pending?.visual?.crateScale ?? CRATE_SCALE);
-      actor.sprite.setTexture("arena-materials", this.materialFrame(LOOT_MATERIAL_FRAME[kind])).setDisplaySize(size, size);
-      // Crates stay anchored to their spawn tile for their entire lifetime.
-      this.drawBar(actor.bar, target.hp / target.maxHp, target.hp < target.maxHp, -8);
+      if (kind === "obsidian-beetle" || kind === "ember-sentinel") {
+        if (actor.x !== target.x || actor.y !== target.y) {
+          this.walk(actor.root, target.x, target.y);
+          actor.x = target.x; actor.y = target.y;
+        }
+        actor.sprite.setTexture(kind).setDisplaySize(kind === "ember-sentinel" ? 42 : 32, kind === "ember-sentinel" ? 36 : 22);
+        this.drawBar(actor.bar, target.hp / target.maxHp, true, kind === "ember-sentinel" ? -20 : -13);
+      } else {
+        const size = lootDisplaySize(this.pending?.visual?.crateScale ?? CRATE_SCALE);
+        actor.sprite.setTexture("arena-materials", this.materialFrame(LOOT_MATERIAL_FRAME[kind])).setDisplaySize(size, size);
+        // Chests stay anchored to their spawn tile for their entire lifetime.
+        this.drawBar(actor.bar, target.hp / target.maxHp, target.hp < target.maxHp, -8);
+      }
     }
     for (const [id, actor] of this.crates) {
       if (seen.has(id)) continue;
@@ -284,8 +310,8 @@ export class DungeonScene extends Phaser.Scene {
         actor.y = hero.dungeonY;
         this.walk(actor.root, hero.dungeonX, hero.dungeonY);
       }
-      const ratio = hero.stamina / hero.maxStamina;
-      this.drawBar(actor.bar, ratio, ratio < 1);
+      const ratio = hero.shield / Math.max(1, hero.shieldMax);
+      this.drawBar(actor.bar, ratio, true);
     }
     for (const [id, actor] of this.heroes) {
       if (seen.has(id)) continue;
@@ -296,6 +322,10 @@ export class DungeonScene extends Phaser.Scene {
   }
 
   private playAttack(hit: DungeonCombatEvent) {
+    if (hit.attacker === "MONSTER") {
+      this.hitImpact(hit, 0x72e6ff);
+      return;
+    }
     const actor = this.heroes.get(hit.heroId);
     const targetPosition = projectArena(cellCenter(hit.x), cellCenter(hit.y));
     const x = targetPosition.x;
@@ -336,7 +366,7 @@ export class DungeonScene extends Phaser.Scene {
     const targetPosition = projectArena(cellCenter(hit.x), cellCenter(hit.y));
     const x = targetPosition.x;
     const y = targetPosition.y;
-    const crate = this.crates.get(hit.targetId);
+    const crate = hit.attacker === "MONSTER" ? undefined : this.crates.get(hit.targetId);
     if (crate && !this.reducedMotion) {
       this.tweens.killTweensOf(crate.sprite);
       crate.sprite.setPosition(0, 0).setAlpha(1).setTintFill(0xfff1c5);
@@ -351,7 +381,7 @@ export class DungeonScene extends Phaser.Scene {
     }
     spark.fillStyle(color, 0.9).fillRect(-1.5, -1.5, 3, 3);
     this.tweens.add({ targets: spark, alpha: 0, scale: this.reducedMotion ? 1 : 1.6, duration: 230, onComplete: () => spark.destroy() });
-    this.floatCombatText(x, y - 9, "-" + hit.damage, "#fff0cf");
+    this.floatCombatText(x, y - 9, hit.attacker === "MONSTER" ? `-${hit.damage} SHIELD` : "-" + hit.damage, hit.attacker === "MONSTER" ? "#72e6ff" : "#fff0cf");
     if (hit.destroyed) {
       this.crateExplosion(hit);
       this.floatCombatText(x + 5, y, "+" + hit.reward.toLocaleString("en-US", { maximumFractionDigits: 2 }), "#ffe29b");
@@ -363,7 +393,7 @@ export class DungeonScene extends Phaser.Scene {
     const x = targetPosition.x;
     const y = targetPosition.y;
     const kind = hit.kind??crateKind({ id: hit.targetId, type: hit.targetType } as TargetDto);
-    const color = kind === "wooden-crate" ? 0xcf9956 : kind === "iron-crate" ? 0x91acbf : kind === "crystal-chest" ? 0x86dff5 : 0xf6c15b;
+    const color = kind === "wooden-crate" ? 0xcf9956 : kind === "iron-crate" ? 0x91acbf : kind === "crystal-chest" || kind === "obsidian-beetle" ? 0x86dff5 : kind === "ember-sentinel" ? 0xff8846 : 0xf6c15b;
     const flash = this.add.graphics().setPosition(x, y).setDepth(1001);
     flash.fillStyle(0xffe7a8, 0.7).fillCircle(0, 0, 4);
     flash.lineStyle(1.5, color, 0.9).strokeCircle(0, 0, 6);

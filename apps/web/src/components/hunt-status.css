@@ -40,3 +40,4 @@
  .app[data-screen="hunt"] .topbar-right { margin-left: auto; }
 }
 @media (max-width: 380px) { .hunt-crates img { display: none; } .hunt-topbar-status { grid-template-columns: 49px minmax(0,1fr) 72px; gap: 5px; } }
+.hunt-crates-copy em{font-style:normal;color:#76d9e6}

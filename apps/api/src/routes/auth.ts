@@ -3,6 +3,8 @@ import { randomBytes } from "node:crypto";
 import { hasGameAccess, EARLY_ACCESS_MESSAGE } from "../services/early-access.js";
 import { z } from "zod";
 import { heroStats } from "../services/summon.js";
+import { rollHeroSkills } from "../services/hero-skills.js";
+import { shieldCapacity } from "@herobits/shared";
 import { prisma } from "../lib/prisma.js";
 import { shortWallet, toUserDto } from "../lib/mappers.js";
 import {
@@ -33,6 +35,9 @@ async function grantStarterHeroes(userId: string) {
         userId,
         class: s.class,
         rarity: s.rarity,
+        shield: shieldCapacity(s.rarity),
+        shieldMax: shieldCapacity(s.rarity),
+        skills: rollHeroSkills(s.rarity),
         ...heroStats(s.class,s.rarity,config),
       },
     });

@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { api } from "../lib/api";
 import { RecoveryHouse } from "../components/RecoveryHouse";
 import { useAuth } from "../state/AuthContext";
+import { Link } from "react-router-dom";
 
 export function ShopPage() {
   const navigate = useNavigate();
@@ -65,7 +66,14 @@ export function ShopPage() {
             <span className="mode-name">PORTER</span><span className="shop-description">Keep the adventure moving</span>
           </span>
         </button>
+        <button type="button" className="mode mode-scrap" onClick={() => navigate("/shop/scrap")}>
+          <span className="mode-card">
+            <span className="mode-art art-scrap" aria-hidden><span className="scrap-gem scrap-gem-one" /><span className="scrap-gem scrap-gem-two" /><span className="scrap-gem scrap-gem-three" /></span>
+            <span className="mode-name">SCRAP</span><span className="shop-description">Repair a hero's shield</span>
+          </span>
+        </button>
       </nav>
+      <Link className="shop-armory-link" to="/armory">REPAIR SHIELDS · VIEW SKILLS · SCRAP HEROES ↗</Link>
     </section>
   );
 }

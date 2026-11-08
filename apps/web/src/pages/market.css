@@ -1,0 +1,27 @@
+.trading-post{max-width:1260px;margin-inline:auto}
+.market-topline{display:flex;flex-wrap:wrap;gap:30px 70px;padding:22px 30px;margin-bottom:24px;border-top:3px solid #56bbc4}
+.market-topline>div{display:grid;gap:7px}
+.market-topline strong{font:26px var(--font-display);color:#ffe1a6}
+.market-topline small,.market-offer-price small{font:10px var(--font-ui);color:#9bb5c5}
+.market-tabs{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px}
+.market-tabs button{background:#1d2d3e;border:1px solid #38586c;color:#98b6c8;padding:13px 20px;font:13px var(--font-display);cursor:pointer}
+.market-tabs button.selected{color:#c8f6ff;background:#244453;border-color:#65d9e2;box-shadow:inset 0 3px #65d9e2}
+.market-list{display:grid;gap:10px}
+.market-offer{display:grid;grid-template-columns:70px minmax(170px,1fr) auto auto;align-items:center;gap:20px;padding:13px 20px}
+.market-offer-icon{width:66px;height:66px;display:grid;place-items:center;color:#f7bc64;font:35px var(--font-display);background:radial-gradient(circle,#2c3950,#152331 72%);border:1px solid #426077}
+.market-offer-copy h3{margin:5px 0;font:20px var(--font-display);color:#f3e8d5}
+.market-offer-copy small{color:#83d8e5;font:10px var(--font-ui);letter-spacing:1px}
+.market-offer-copy span{color:#8aa6b6;font:11px var(--font-ui)}
+.market-offer-price{font:23px var(--font-display);color:#f5c779;white-space:nowrap}
+.market-offer .cta,.market-offer .cta-alt{min-width:120px;text-align:center;font-size:17px}
+.market-offer button:disabled,.market-sell button:disabled{opacity:.55;cursor:not-allowed}
+.market-empty{text-align:center;padding:55px 24px}
+.market-empty h3,.market-sell h3{font:30px var(--font-display);color:#f8e3bd;margin:12px 0}
+.market-empty p,.market-sell p{color:#a9bfcc;line-height:1.7}
+.market-sell{max-width:710px;display:grid;gap:18px;padding:30px;border-top:3px solid #e5ad57}
+.market-sell label{display:grid;gap:8px;color:#d4e4e8;font:13px var(--font-ui)}
+.market-sell select,.market-sell input{width:100%;min-height:48px;padding:10px 12px;color:#f7e9d8;background:#101d2b;border:1px solid #466075;font:15px var(--font-ui)}
+.market-sell .market-help{margin:0;font-size:12px}
+.market-sell .cta{justify-self:start}
+.market-sell select:focus-visible,.market-sell input:focus-visible,.market-tabs button:focus-visible{outline:2px solid #7de6e4;outline-offset:2px}
+@media(max-width:700px){.market-offer{grid-template-columns:62px 1fr;gap:12px}.market-offer-icon{width:58px;height:58px}.market-offer-price{grid-column:1/2;font-size:17px}.market-offer .cta,.market-offer .cta-alt{grid-column:2/3;justify-self:end}.market-topline{gap:18px 30px;padding:18px}.market-topline strong{font-size:21px}.market-sell{padding:22px}}

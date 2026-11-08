@@ -27,6 +27,30 @@ test("forge boosts only available slots while other heroes keep base recovery", 
   assert.equal(rows[0].stamina, 4);
   assert.equal(rows[1].stamina, 1);
 });
+test("manual assignments get priority and removed heroes stay outside", () => {
+  const rows = advanceRecovery([
+    hero("oldest"),
+    { ...hero("chosen"), forgeMode: "PINNED" },
+    { ...hero("removed"), forgeMode: "EXCLUDED" },
+  ], at(0), at(60_000), { slots: 1, rate: 2 });
+  assert.deepEqual(rows.map(row => row.stamina), [0, 2, 0]);
+  assert.equal(rows[0].staminaRecoveryUnits, 60_000);
+  assert.equal(rows[2].staminaRecoveryUnits, 60_000);
+});
+test("enabled porter assigns the strongest resting hero to the forge", () => {
+  const rows = advanceRecovery([
+    { ...hero("weak"), atk: 5, spd: 1, forgeMode: "PINNED" },
+    { ...hero("strong"), atk: 14, spd: 2, forgeMode: "EXCLUDED" },
+  ], at(0), at(60_000), { slots: 1, rate: 2 }, 0.5, true);
+  assert.deepEqual(rows.map(row => row.stamina), [0, 2]);
+});
+test("porter gives a higher rarity the forge slot before raw attack and skips broken shields", () => {
+  const common = { ...hero("common"), rarity: "COMMON" as const, atk: 50, shield: 6000 };
+  const rare = { ...hero("rare"), rarity: "RARE" as const, atk: 8, shield: 18000 };
+  const broken = { ...hero("broken"), rarity: "SUPER_LEGENDARY" as const, atk: 99, shield: 0 };
+  const rows = advanceRecovery([common, rare, broken], at(0), at(60_000), { slots: 1, rate: 2 }, 0.5, true);
+  assert.deepEqual(rows.map(row => row.stamina), [0, 2, 0]);
+});
 test("a full hero releases its forge slot during an offline interval", () => {
   const rows = advanceRecovery([hero("a", 9), hero("b")], at(0), at(60_000), { slots: 1, rate: 2 });
   assert.equal(rows[0].stamina, 10);

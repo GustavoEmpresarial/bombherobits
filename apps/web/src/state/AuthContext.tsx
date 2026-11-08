@@ -39,14 +39,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [error, setError] = useState<string | null>(null);
 
   const refresh = useCallback(async () => {
+    const startDemoSession = async () => {
+      demoBootstrap ??= api.demoSession();
+      const session = await demoBootstrap;
+      localStorage.setItem(TOKEN_KEY, session.token);
+      setToken(session.token);
+      setUser(session.user);
+      setError(null);
+      demoBootstrap = null;
+    };
     if (!token) {
       if (IS_DEMO) {
         setLoading(true);
         try {
-          demoBootstrap ??= api.demoSession();
-          const session = await demoBootstrap;
-          localStorage.setItem(TOKEN_KEY, session.token);
-          setToken(session.token); setUser(session.user); setError(null);
+          await startDemoSession();
         } catch (err) { setError(err instanceof Error ? err.message : "Could not start demo"); }
         finally { demoBootstrap = null; setLoading(false); }
       } else { setUser(null); setLoading(false); }
@@ -55,10 +61,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const me = await api.me(token);
       setUser(me);
+      setError(null);
     } catch {
       localStorage.removeItem(TOKEN_KEY);
       setToken(null);
       setUser(null);
+      if (IS_DEMO) {
+        try { await startDemoSession(); }
+        catch (err) { setError(err instanceof Error ? err.message : "Could not start demo"); }
+        finally { demoBootstrap = null; }
+      }
     } finally {
       setLoading(false);
     }
