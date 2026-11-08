@@ -1,4 +1,6 @@
-import type { HeroClass, HeroRarity, UserDto } from "@herobits/shared";
+import type { GearElement, GearRarity, GearSlot, HeroClass, HeroRarity, UserDto } from "@herobits/shared";
+
+type ListedGear = { id: string; slot: GearSlot; element: GearElement; rarity: GearRarity; attack: number; shield: number; shieldMax: number };
 
 export type WorldState = {
   user: UserDto;
@@ -18,8 +20,9 @@ export type WorldState = {
     seller: string;
     mine: boolean;
     heroClass: HeroClass | null;
+    gear: ListedGear | null;
   }[];
-  myListings: { id: string; kind: string; refId: string; title: string; price: number; heroClass: HeroClass | null }[];
+  myListings: { id: string; kind: string; refId: string; title: string; price: number; heroClass: HeroClass | null; gear: ListedGear | null }[];
   catalog: { tier: number; name: string; slots: number; rate: number; price: number }[];
   economy: {
     PORTER_PRICE: number;

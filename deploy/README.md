@@ -2,9 +2,9 @@
 
 Current targets: http://5.189.157.88 and https://bombherobits.pro.
 
-Active release: 20261108-equipment, deployed November 8, 2026. The API and web images were built on the VM, the equipment inventory migration was applied after a database backup, and HTTPS health, site routes, bundled equipment UI, and authenticated-only equipment API were checked externally. The previous release is 20261107-mini-parity-2, which included the earlier Mini Hero parity work and demo session recovery after an old token expires.
+Active release: 20261108-gear-market-pity, deployed November 8, 2026. The API and web images were built on the VM, the gear market and rarity guarantee migrations were applied after a database backup, and HTTPS health, armory/market routes, and authenticated-only equipment API were checked externally. The previous release is 20261108-equipment.
 
-Initial database backup: /opt/herobits/shared/initial-deployment.dump. Pre-update backups: /opt/herobits/shared/pre-20261107-mini-parity-1.dump and /opt/herobits/shared/pre-20261108-equipment.dump. Edge proxy backup: /opt/herobits/shared/edge-nginx-before.conf. The current release symlink is /opt/herobits/current.
+Initial database backup: /opt/herobits/shared/initial-deployment.dump. Pre-update backups include /opt/herobits/shared/pre-20261108-equipment.dump and /opt/herobits/shared/pre-20261108-gear-market-pity.dump. Edge proxy backup: /opt/herobits/shared/edge-nginx-before.conf. The current release symlink is /opt/herobits/current.
 
 The application runs as a separate Docker Compose project, with its own PostgreSQL volume. The existing edge proxy routes the bare IP and bombherobits.pro on port 80 to this app. Other domain routes and the existing direct port 5000 service are preserved.
 

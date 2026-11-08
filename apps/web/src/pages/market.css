@@ -9,6 +9,7 @@
 .market-list{display:grid;gap:10px}
 .market-offer{display:grid;grid-template-columns:70px minmax(170px,1fr) auto auto;align-items:center;gap:20px;padding:13px 20px}
 .market-offer-icon{width:66px;height:66px;display:grid;place-items:center;color:#f7bc64;font:35px var(--font-display);background:radial-gradient(circle,#2c3950,#152331 72%);border:1px solid #426077}
+.market-offer-icon img{width:48px;height:48px;object-fit:contain;image-rendering:pixelated}
 .market-offer-copy h3{margin:5px 0;font:20px var(--font-display);color:#f3e8d5}
 .market-offer-copy small{color:#83d8e5;font:10px var(--font-ui);letter-spacing:1px}
 .market-offer-copy span{color:#8aa6b6;font:11px var(--font-ui)}

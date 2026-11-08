@@ -90,7 +90,7 @@ export async function worldRoutes(app: FastifyInstance) {
   app.post("/market/list", { preHandler: authenticate }, async (request, reply) => {
     const parsed = z
       .object({
-        kind: z.enum(["HERO", "BLACKSMITH", "PORTER"]),
+        kind: z.enum(["HERO", "BLACKSMITH", "PORTER", "GEAR"]),
         refId: z.string(),
         price: z.number().positive(),
       })

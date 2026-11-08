@@ -225,6 +225,7 @@ export interface UserDto {
   mintCards: number;
   scrap: number;
   summonPity: import("./summon-pity.js").SummonPity;
+  gearPity: import("./equipment.js").GearPity;
   inviteCode: string;
   porterOn: boolean;
   shieldRepairOn: boolean;

@@ -4,7 +4,8 @@
 .equipment-head h2,.equipment-section-head h3{margin:6px 0;font-size:25px;color:#ffe1a8}
 .equipment-head p,.equipment-section-head p{margin:0;color:#a9bac9;font-size:13px}
 .equipment-head>span{color:#e8bb6b;white-space:nowrap;font-size:12px}
-.equipment-boxes{display:grid;grid-template-columns:repeat(5,minmax(120px,1fr));gap:12px;margin-bottom:28px}
+.equipment-boxes{display:grid;grid-template-columns:repeat(3,minmax(120px,1fr));gap:12px;margin-bottom:16px}
+.equipment-pity{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-bottom:28px}.equipment-pity>div{padding:9px 11px;background:#101b2a;border:1px solid #385065}.equipment-pity span{display:flex;justify-content:space-between;gap:8px;color:var(--gear-color);font-size:10px;letter-spacing:.07em}.equipment-pity span b{color:#e9e1d1}.equipment-pity>div>div{height:6px;margin-top:7px;background:#070f19;border:1px solid #33495d}.equipment-pity i{display:block;height:100%;background:var(--gear-color)}
 .equipment-boxes button{min-height:145px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;background:radial-gradient(circle at 50% 25%,color-mix(in srgb,var(--gear-color) 22%,#172231),#131c2a 75%);border:2px solid var(--gear-color);color:#f7eee2;box-shadow:4px 4px 0 #080d16;cursor:pointer;font:inherit}
 .equipment-boxes button:hover:not(:disabled){transform:translateY(-3px);box-shadow:4px 7px 0 #080d16}
 .equipment-boxes button:disabled,.equipment-card-actions button:disabled,.equipment-craft button:disabled{opacity:.45;cursor:not-allowed}
@@ -24,4 +25,4 @@
 .equipment-craft{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;border-top:1px solid #3d5669;margin-top:22px;padding-top:18px;color:#ecd9b5;font-size:12px}
 .equipment-craft>div{display:flex;gap:8px}.equipment-craft small{width:100%;color:#9eafbb}.equipment-empty{padding:30px;text-align:center;color:#9eafbb;border:1px dashed #476174}
 .equipment-notice{padding:10px;background:#214c42;border:1px solid #4fad85;color:#cbf2d3}
-@media(max-width:850px){.equipment-boxes{grid-template-columns:repeat(auto-fit,minmax(125px,1fr))}.equipment-head,.equipment-section-head{align-items:start;flex-direction:column}}
+@media(max-width:850px){.equipment-boxes,.equipment-pity{grid-template-columns:repeat(auto-fit,minmax(125px,1fr))}.equipment-head,.equipment-section-head{align-items:start;flex-direction:column}}

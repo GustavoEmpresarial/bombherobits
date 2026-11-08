@@ -22,6 +22,7 @@ export function toUserDto(user: User): UserDto {
     mintCards: user.mintCards,
     scrap: user.scrap,
     summonPity: { rare: user.summonPityRare, superRare: user.summonPitySuperRare, epic: user.summonPityEpic },
+    gearPity: { blue: user.gearPityBlue, purple: user.gearPityPurple, gold: user.gearPityGold },
     inviteCode: user.inviteCode ?? "",
     porterOn: user.porterOn,
     shieldRepairOn: user.shieldRepairOn,

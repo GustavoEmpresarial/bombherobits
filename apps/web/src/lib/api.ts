@@ -8,7 +8,7 @@ import type {
   FusionResultDto,
   PlayerMailDto,
   GearPieceDto,
-  GearRarity,
+  GearBox,
 } from "@herobits/shared";
 
 const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:3001";
@@ -41,7 +41,7 @@ async function request<T>(
 
 export const api = {
   equipment: (token: string) => request<GearPieceDto[]>("/equipment", { token, cache: "no-store" }),
-  buyEquipment: (token: string, rarity: GearRarity, requestKey: string) => request<{ piece: GearPieceDto | null; user: UserDto; repeated: boolean }>("/equipment/boxes", { method: "POST", token, body: JSON.stringify({ rarity, requestKey }) }),
+  buyEquipment: (token: string, rarity: GearBox, requestKey: string) => request<{ piece: GearPieceDto | null; user: UserDto; repeated: boolean }>("/equipment/boxes", { method: "POST", token, body: JSON.stringify({ rarity, requestKey }) }),
   equipEquipment: (token: string, id: string, heroId: string) => request<GearPieceDto>(`/equipment/${id}/equip`, { method: "POST", token, body: JSON.stringify({ heroId }) }),
   removeEquipment: (token: string, id: string) => request<GearPieceDto>(`/equipment/${id}/remove`, { method: "POST", token, body: "{}" }),
   repairEquipment: (token: string, id: string) => request<{ piece: GearPieceDto; user: UserDto; cost: number }>(`/equipment/${id}/repair`, { method: "POST", token, body: "{}" }),

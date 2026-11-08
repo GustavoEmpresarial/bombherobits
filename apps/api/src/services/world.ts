@@ -38,6 +38,9 @@ export async function worldState(userId: string) {
   const listedHeroIds = [...listings, ...myListings].filter((listing) => listing.kind === "HERO").map((listing) => listing.refId);
   const listedHeroes = listedHeroIds.length ? await prisma.hero.findMany({ where: { id: { in: listedHeroIds } }, select: { id: true, class: true } }) : [];
   const heroClassById = new Map(listedHeroes.map((hero) => [hero.id, hero.class]));
+  const listedGearIds = [...listings, ...myListings].filter((listing) => listing.kind === "GEAR").map((listing) => listing.refId);
+  const listedGear = listedGearIds.length ? await prisma.gearPiece.findMany({ where: { id: { in: listedGearIds } }, select: { id: true, slot: true, element: true, rarity: true, attack: true, shield: true, shieldMax: true } }) : [];
+  const gearById = new Map(listedGear.map((piece) => [piece.id, piece]));
   const service = blacksmiths.find((b) => b.inService);
   const restingHeroes = service ? await prisma.hero.findMany({
     where: { userId, status: "IDLE" },
@@ -67,8 +70,9 @@ export async function worldState(userId: string) {
       seller: l.seller.displayName,
       mine: l.sellerId === userId,
       heroClass: l.kind === "HERO" ? heroClassById.get(l.refId) ?? null : null,
+      gear: l.kind === "GEAR" ? gearById.get(l.refId) ?? null : null,
     })),
-    myListings: myListings.map((l) => ({ id: l.id, kind: l.kind, refId: l.refId, title: l.title, price: toGold(l.price), heroClass: l.kind === "HERO" ? heroClassById.get(l.refId) ?? null : null })),
+    myListings: myListings.map((l) => ({ id: l.id, kind: l.kind, refId: l.refId, title: l.title, price: toGold(l.price), heroClass: l.kind === "HERO" ? heroClassById.get(l.refId) ?? null : null, gear: l.kind === "GEAR" ? gearById.get(l.refId) ?? null : null })),
     catalog: BLACKSMITHS,
     economy: ECONOMY,
   };
@@ -201,7 +205,7 @@ export async function setShieldRepairRarity(userId: string, rarity: HeroRarity, 
 
 export async function listForSale(
   userId: string,
-  kind: "HERO" | "BLACKSMITH" | "PORTER",
+  kind: "HERO" | "BLACKSMITH" | "PORTER" | "GEAR",
   refId: string,
   price: number,
 ) {
@@ -225,12 +229,18 @@ export async function listForSale(
       if (!row) throw fail("Recovery house not found", 404);
       if (row.inService) throw fail("Take the house out of service first");
       title = BLACKSMITHS[row.tier - 1]?.name ?? "Recovery House";
-    } else {
+    } else if (kind === "PORTER") {
       const row = await tx.porter.findFirst({ where: { id: refId, userId } });
       if (!row) throw fail("Porter not found", 404);
       const user = await tx.user.findUniqueOrThrow({ where: { id: userId } });
       if (user.porterOn) throw fail("Turn off the porter before listing it");
       title = "Porter";
+    } else {
+      const piece = await tx.gearPiece.findFirst({ where: { id: refId, userId, listed: false } });
+      if (!piece) throw fail("Gear not found or already listed", 404);
+      if (piece.heroId) throw fail("Remove gear from its hero before listing it");
+      title = `${piece.rarity} ${piece.element} ${piece.slot}`;
+      await tx.gearPiece.update({ where: { id: piece.id }, data: { listed: true } });
     }
     await tx.listing.create({ data: { sellerId: userId, kind, refId, title, price: new Prisma.Decimal(price.toFixed(2)) } });
   });
@@ -273,10 +283,14 @@ export async function buyListing(userId: string, listingId: string) {
       if (!house) throw fail("House is no longer available", 409);
       if (await tx.blacksmith.count({ where: { userId, tier: house.tier } })) throw fail("You already own this house tier");
       await tx.blacksmith.update({ where: { id: house.id }, data: { userId } });
-    } else {
+    } else if (listing.kind === "PORTER") {
       if (await tx.porter.count({ where: { userId } })) throw fail("You already own a porter");
       const moved = await tx.porter.updateMany({ where: { id: listing.refId, userId: listing.sellerId }, data: { userId } });
       if (!moved.count) throw fail("Porter is no longer available", 409);
+    } else {
+      if (await tx.gearPiece.count({ where: { userId } }) >= 500) throw fail("Armory is full");
+      const moved = await tx.gearPiece.updateMany({ where: { id: listing.refId, userId: listing.sellerId, listed: true, heroId: null }, data: { userId, listed: false, lastHeroId: null, movedDay: null } });
+      if (!moved.count) throw fail("Gear is no longer available", 409);
     }
     await tx.listing.update({ where: { id: listing.id }, data: { status: "SOLD" } });
     await tx.user.update({ where: { id: listing.sellerId }, data: { gold: { increment: received } } });
@@ -292,6 +306,7 @@ export async function cancelListing(userId: string, listingId: string) {
     if (!listing) throw fail("Listing is gone", 404);
     await tx.listing.update({ where: { id: listing.id }, data: { status: "CANCELLED" } });
     if (listing.kind === "HERO") await tx.hero.updateMany({ where: { id: listing.refId, userId, status: "LISTED" }, data: { status: "IDLE" } });
+    if (listing.kind === "GEAR") await tx.gearPiece.updateMany({ where: { id: listing.refId, userId, listed: true }, data: { listed: false } });
   });
   return worldState(userId);
 }

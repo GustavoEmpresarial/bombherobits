@@ -1,6 +1,6 @@
 import { randomInt } from "node:crypto";
-import type { GearPiece, GearRarity, Prisma } from "@prisma/client";
-import { GEAR_ELEMENTS, GEAR_RARITIES, GEAR_RULES, GEAR_SLOTS, HERO_RARITIES, type GearPieceDto } from "@herobits/shared";
+import type { GearPiece, Prisma } from "@prisma/client";
+import { GEAR_BOXES, GEAR_ELEMENTS, GEAR_RARITIES, GEAR_RULES, GEAR_SLOTS, HERO_RARITIES, advanceGearPity, chooseGearRarity, gearRarityDrawSize, type GearBox, type GearPieceDto } from "@herobits/shared";
 import { prisma } from "../lib/prisma.js";
 import { toUserDto } from "../lib/mappers.js";
 import { processTicks } from "./dungeon.js";
@@ -20,25 +20,29 @@ async function lockUser(tx: Prisma.TransactionClient, userId: string) {
 }
 
 export async function listEquipment(userId: string) {
-  const pieces = await prisma.gearPiece.findMany({ where: { userId }, orderBy: [{ createdAt: "desc" }, { id: "desc" }] });
+  const pieces = await prisma.gearPiece.findMany({ where: { userId, listed: false }, orderBy: [{ createdAt: "desc" }, { id: "desc" }] });
   return pieces.map(dto);
 }
 
-export async function buyEquipment(userId: string, rarity: GearRarity, requestKey: string) {
-  if (!GEAR_RARITIES.includes(rarity) || typeof requestKey !== "string" || !/^[a-zA-Z0-9_-]{8,80}$/.test(requestKey)) throw fail("Choose a gear box and a valid request key");
+export async function buyEquipment(userId: string, box: GearBox, requestKey: string) {
+  if (!GEAR_BOXES.includes(box) || typeof requestKey !== "string" || !/^[a-zA-Z0-9_-]{8,80}$/.test(requestKey)) throw fail("Choose a gear box and a valid request key");
   return prisma.$transaction(async (tx) => {
-    await lockUser(tx, userId);
+    const buyer = await lockUser(tx, userId);
     const previous = await tx.gearPurchase.findUnique({ where: { userId_requestKey: { userId, requestKey } }, include: { piece: true } });
     if (previous) return { piece: previous.piece ? dto(previous.piece) : null, user: toUserDto(await tx.user.findUniqueOrThrow({ where: { id: userId } })), repeated: true };
     if (await tx.gearPiece.count({ where: { userId } }) >= 500) throw fail("The armory is full (500 pieces)");
+    const boxRules = GEAR_RULES[box];
+    const paid = await tx.user.updateMany({ where: { id: userId, gold: { gte: boxRules.price } }, data: { gold: { decrement: boxRules.price } } });
+    if (!paid.count) throw fail(`Need ${boxRules.price} game gold for this box`);
+    const rolled = chooseGearRarity(box, randomInt(gearRarityDrawSize(box)));
+    const { rarity, pity } = advanceGearPity(rolled, { blue: buyer.gearPityBlue, purple: buyer.gearPityPurple, gold: buyer.gearPityGold });
     const rules = GEAR_RULES[rarity];
-    const paid = await tx.user.updateMany({ where: { id: userId, gold: { gte: rules.price } }, data: { gold: { decrement: rules.price } } });
-    if (!paid.count) throw fail(`Need ${rules.price} game gold for this box`);
     const piece = await tx.gearPiece.create({ data: {
       userId, rarity, slot: roll(GEAR_SLOTS), element: roll(GEAR_ELEMENTS),
       attack: randomInt(rules.attack[0], rules.attack[1] + 1), shield: rules.shield, shieldMax: rules.shield,
     } });
-    await tx.gearPurchase.create({ data: { userId, requestKey, pieceId: piece.id, cost: rules.price } });
+    await tx.user.update({ where: { id: userId }, data: { gearPityBlue: pity.blue, gearPityPurple: pity.purple, gearPityGold: pity.gold } });
+    await tx.gearPurchase.create({ data: { userId, requestKey, pieceId: piece.id, cost: boxRules.price } });
     return { piece: dto(piece), user: toUserDto(await tx.user.findUniqueOrThrow({ where: { id: userId } })), repeated: false };
   });
 }
@@ -52,6 +56,7 @@ export async function equipEquipment(userId: string, pieceId: string, heroId: st
       tx.hero.findFirst({ where: { id: heroId, userId } }),
     ]);
     if (!piece || !hero) throw fail("Gear or hero not found", 404);
+    if (piece.listed) throw fail("Cancel this gear listing before equipping it");
     if (hero.status !== "IDLE") throw fail("Rest the hero before changing gear");
     if (piece.heroId && piece.heroId !== heroId) throw fail("Remove this piece from its current hero first");
     if (piece.heroId === heroId) return dto(piece);
@@ -71,6 +76,7 @@ export async function removeEquipment(userId: string, pieceId: string) {
     await lockUser(tx, userId);
     const piece = await tx.gearPiece.findFirst({ where: { id: pieceId, userId }, include: { hero: true } });
     if (!piece) throw fail("Gear not found", 404);
+    if (piece.listed) throw fail("Cancel this gear listing before removing it");
     if (!piece.heroId) return dto(piece);
     if (piece.hero?.status !== "IDLE") throw fail("Rest the hero before removing gear");
     return dto(await tx.gearPiece.update({ where: { id: pieceId }, data: { heroId: null, lastHeroId: piece.heroId, movedDay: today() } }));
@@ -83,6 +89,7 @@ export async function repairEquipment(userId: string, pieceId: string) {
     await lockUser(tx, userId);
     const piece = await tx.gearPiece.findFirst({ where: { id: pieceId, userId }, include: { hero: true } });
     if (!piece) throw fail("Gear not found", 404);
+    if (piece.listed) throw fail("Cancel this gear listing before repairing it");
     if (piece.hero && piece.hero.status !== "IDLE") throw fail("Rest the hero before repairing gear");
     if (piece.shield >= piece.shieldMax) throw fail("Gear shield is already full");
     const cost = GEAR_RULES[piece.rarity].repair;
@@ -99,9 +106,9 @@ export async function salvageEquipment(userId: string, pieceIds: string[]) {
   return prisma.$transaction(async (tx) => {
     await lockUser(tx, userId);
     const pieces = await tx.gearPiece.findMany({ where: { userId, id: { in: ids } } });
-    if (pieces.length !== ids.length || pieces.some((piece) => piece.heroId)) throw fail("Only owned, free gear can be salvaged");
+    if (pieces.length !== ids.length || pieces.some((piece) => piece.heroId || piece.listed)) throw fail("Only owned, free gear can be salvaged");
     const gained = pieces.reduce((sum, piece) => sum + GEAR_RULES[piece.rarity].salvage, 0);
-    await tx.gearPiece.deleteMany({ where: { userId, id: { in: ids }, heroId: null } });
+    await tx.gearPiece.deleteMany({ where: { userId, id: { in: ids }, heroId: null, listed: false } });
     const user = await tx.user.update({ where: { id: userId }, data: { scrap: { increment: gained } } });
     return { gained, user: toUserDto(user) };
   });
@@ -114,16 +121,16 @@ export async function fuseEquipment(userId: string, pieceIds: string[]) {
   return prisma.$transaction(async (tx) => {
     await lockUser(tx, userId);
     const pieces = await tx.gearPiece.findMany({ where: { userId, id: { in: ids } } });
-    if (pieces.length !== 4 || pieces.some((piece) => piece.heroId)) throw fail("Only owned, free gear can be fused");
+    if (pieces.length !== 4 || pieces.some((piece) => piece.heroId || piece.listed)) throw fail("Only owned, free gear can be fused");
     const rarity = pieces[0].rarity;
     if (pieces.some((piece) => piece.rarity !== rarity)) throw fail("All four pieces must have the same rarity");
     const next = GEAR_RARITIES[GEAR_RARITIES.indexOf(rarity) + 1];
-    if (!next) throw fail("Gold gear is the highest rarity");
+    if (!next) throw fail("Mythic gear is the highest rarity");
     const cost = GEAR_RULES[rarity].fusion;
     if (!(await tx.user.updateMany({ where: { id: userId, scrap: { gte: cost } }, data: { scrap: { decrement: cost } } })).count) throw fail(`Need ${cost} Scrap to fuse gear`);
     const element = pieces.every((piece) => piece.element === pieces[0].element) ? pieces[0].element : roll(GEAR_ELEMENTS);
     const rules = GEAR_RULES[next];
-    await tx.gearPiece.deleteMany({ where: { userId, id: { in: ids }, heroId: null } });
+    await tx.gearPiece.deleteMany({ where: { userId, id: { in: ids }, heroId: null, listed: false } });
     const piece = await tx.gearPiece.create({ data: { userId, rarity: next, slot: roll(GEAR_SLOTS), element,
       attack: randomInt(rules.attack[0], rules.attack[1] + 1), shield: rules.shield, shieldMax: rules.shield } });
     return { piece: dto(piece), cost, user: toUserDto(await tx.user.findUniqueOrThrow({ where: { id: userId } })) };
