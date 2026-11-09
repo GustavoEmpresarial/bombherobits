@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState, type FormEvent } from "react";
-import type { GearPieceDto, HeroDto } from "@herobits/shared";
+import { GEAR_LABELS, GEAR_RARITIES, type GearPieceDto, type GearRarity, type HeroDto } from "@herobits/shared";
 import { PageHeading, PageState } from "../components/Page";
 import { GameSprite } from "../components/GameSprite";
 import { api } from "../lib/api";
@@ -16,7 +16,10 @@ export function MarketPage() {
   const [heroes, setHeroes] = useState<HeroDto[]>([]);
   const [gear, setGear] = useState<GearPieceDto[]>([]);
   const [inventoryError, setInventoryError] = useState("");
-  const [tab, setTab] = useState<"browse" | "sell" | "mine">("browse");
+  const [tab, setTab] = useState<"browse" | "sell" | "mine" | "sales">("browse");
+  const [browseKind, setBrowseKind] = useState<Kind>("HERO");
+  const [gearRarity, setGearRarity] = useState<GearRarity | "ALL">("ALL");
+  const [sort, setSort] = useState<"LOW" | "HIGH" | "NEWEST">("LOW");
   const [kind, setKind] = useState<Kind>("HERO");
   const [refId, setRefId] = useState("");
   const [price, setPrice] = useState("");
@@ -51,6 +54,7 @@ export function MarketPage() {
 
   if (!world || !token) return <PageState error={error} retry={() => window.location.reload()} />;
   const available = options.filter(item => item.kind === kind);
+  const offers = world.listings.filter(item => !item.mine && item.kind === browseKind && (browseKind !== "GEAR" || gearRarity === "ALL" || item.gear?.rarity === gearRarity)).sort((a, b) => sort === "NEWEST" ? Date.parse(b.createdAt) - Date.parse(a.createdAt) : sort === "HIGH" ? b.price - a.price : a.price - b.price);
   const amount = Number(price);
   const valid = price !== "" && Number.isFinite(amount) && amount >= 0.01 && amount <= 1_000_000_000 && Math.round(amount * 100) / 100 === amount;
   const refreshInventory = () => void Promise.all([api.heroes(token), api.equipment(token)]).then(([heroItems, gearItems]) => { setHeroes(heroItems); setGear(gearItems); }).catch(cause => setInventoryError(cause instanceof Error ? cause.message : "Could not refresh inventory"));
@@ -69,24 +73,24 @@ export function MarketPage() {
     <div className="market-topline page-panel">
       <div><span className="page-eyebrow">YOUR BALANCE</span><strong>{money(world.user.gold)} <small>gold</small></strong></div>
       <div><span className="page-eyebrow">TRADING FEE</span><strong>{Math.round(world.economy.MARKET_FEE * 100)}% <small>paid by seller</small></strong></div>
-      <div><span className="page-eyebrow">OPEN OFFERS</span><strong>{world.listings.length}</strong></div>
+      <div><span className="page-eyebrow">YOUR LISTINGS</span><strong>{world.myListings.length}<small> / 20</small></strong></div>
     </div>
     <div className="market-tabs" role="tablist" aria-label="Trading post">
-      {([["browse", "BROWSE"], ["sell", "SELL"], ["mine", `MY LISTINGS · ${world.myListings.length}`]] as const).map(([value, label]) =>
+      {([["browse", "BROWSE"], ["sell", "SELL"], ["sales", "SALES"], ["mine", `MY LISTINGS · ${world.myListings.length}/20`]] as const).map(([value, label]) =>
         <button key={value} role="tab" aria-selected={tab === value} className={tab === value ? "selected" : ""} type="button" onClick={() => setTab(value)}>{label}</button>)}
     </div>
     {error && <p className="error-line" role="alert">{error}</p>}
     {inventoryError && <p className="error-line" role="alert">{inventoryError}</p>}
 
-    {tab === "browse" && <div className="market-list" aria-busy={busy}>
-      {world.listings.filter(item => !item.mine).map(item => <article className="market-offer page-panel" key={item.id}>
+    {tab === "browse" && <><div className="market-category-tabs" aria-label="Market category">{(["HERO", "BLACKSMITH", "PORTER", "GEAR"] as const).map(value => <button type="button" key={value} aria-pressed={browseKind === value} onClick={() => setBrowseKind(value)}>{value === "BLACKSMITH" ? "RECOVERY HOUSES" : value === "HERO" ? "HEROES" : value === "PORTER" ? "PORTERS" : "GEAR"}</button>)}</div><div className="market-filters"><label>Sort by <select value={sort} onChange={event => setSort(event.target.value as typeof sort)}><option value="LOW">Lowest price</option><option value="HIGH">Highest price</option><option value="NEWEST">Newest</option></select></label>{browseKind === "GEAR" && <label>Rarity <select value={gearRarity} onChange={event => setGearRarity(event.target.value as GearRarity | "ALL")}><option value="ALL">All rarities</option>{GEAR_RARITIES.map(value => <option key={value} value={value}>{GEAR_LABELS[value]}</option>)}</select></label>}<span>{offers.length} OFFERS</span></div><div className="market-list" aria-busy={busy}>
+      {offers.map(item => <article className="market-offer page-panel" key={item.id}>
         <span className="market-offer-icon" aria-hidden="true">{item.heroClass ? <GameSprite kind={HERO_ART[item.heroClass].id} scale={1.6} /> : item.gear ? <img src={`/ui/equipment/${item.gear.slot.toLowerCase()}.svg`} alt="" /> : item.kind === "BLACKSMITH" ? "⌂" : "◇"}</span>
-        <div className="market-offer-copy"><small>{item.kind.replace("BLACKSMITH", "RECOVERY HOUSE")}</small><h3>{item.title}</h3><span>Sold by {item.seller}</span></div>
+        <div className="market-offer-copy"><small>{item.kind === "GEAR" && item.gear ? GEAR_LABELS[item.gear.rarity] + " GEAR" : item.kind.replace("BLACKSMITH", "RECOVERY HOUSE")}</small><h3>{item.title}</h3><span>Sold by {item.seller}{item.gear ? ` · +${item.gear.attack} ATK · ${item.gear.shield.toLocaleString("en-US")}/${item.gear.shieldMax.toLocaleString("en-US")} shield` : ""}</span></div>
         <strong className="market-offer-price">{money(item.price)} <small>gold</small></strong>
         <button className="cta cta-main" type="button" disabled={busy || world.user.gold < item.price} onClick={() => { void run(() => api.marketBuy(token, item.id)).then(refreshInventory); }}>{world.user.gold < item.price ? "NEED GOLD" : "BUY"}</button>
       </article>)}
-      {!world.listings.some(item => !item.mine) && <div className="market-empty page-panel"><h3>No offers yet</h3><p>The trading post is quiet. Check back later or list an item.</p><button className="cta cta-main" type="button" onClick={() => setTab("sell")}>CREATE A LISTING</button></div>}
-    </div>}
+      {!offers.length && <div className="market-empty page-panel"><h3>No matching offers</h3><p>Try another category or filter, or list an item of your own.</p><button className="cta cta-main" type="button" onClick={() => setTab("sell")}>CREATE A LISTING</button></div>}
+    </div></>}
 
     {tab === "sell" && <form className="market-sell page-panel" onSubmit={event => void submit(event)}>
       <div><span className="page-eyebrow">MAKE AN OFFER</span><h3>Pass a spark to another hero.</h3><p>Working heroes must rest first. Unequip gear and turn off active houses or porters before sale.</p></div>
@@ -95,8 +99,10 @@ export function MarketPage() {
       {!available.length && <p className="market-help">No available items of this type.</p>}
       <label>Asking price in gold<input type="number" min="0.01" max="1000000000" step="0.01" inputMode="decimal" value={price} required onChange={event => setPrice(event.target.value)} placeholder="100.00" /></label>
       {valid && <p className="market-help">You receive {money(Math.round(amount * (1 - world.economy.MARKET_FEE) * 100) / 100)} gold after the trading fee.</p>}
-      <button className="cta cta-main" type="submit" disabled={busy || !refId || !valid}>{busy ? "LISTING…" : "LIST ITEM"}</button>
+      <button className="cta cta-main" type="submit" disabled={busy || !refId || !valid || world.myListings.length >= 20}>{busy ? "LISTING…" : world.myListings.length >= 20 ? "20/20 LISTINGS" : "LIST ITEM"}</button>
     </form>}
+
+    {tab === "sales" && <div className="market-list">{world.sales.map(item => <article className="market-offer page-panel" key={item.id}><span className="market-offer-icon" aria-hidden="true">◆</span><div className="market-offer-copy"><small>{item.kind}</small><h3>{item.title}</h3><span>Sold · listed {new Date(item.createdAt).toLocaleDateString("en-US")}</span></div><strong className="market-offer-price">{money(item.price)} <small>gold</small></strong></article>)}{!world.sales.length && <div className="market-empty page-panel"><h3>No sales yet</h3><p>Completed sales will appear here.</p></div>}</div>}
 
     {tab === "mine" && <div className="market-list" aria-busy={busy}>
       {world.myListings.map(item => <article className="market-offer page-panel" key={item.id}>

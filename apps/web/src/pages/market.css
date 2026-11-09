@@ -6,6 +6,7 @@
 .market-tabs{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px}
 .market-tabs button{background:#1d2d3e;border:1px solid #38586c;color:#98b6c8;padding:13px 20px;font:13px var(--font-display);cursor:pointer}
 .market-tabs button.selected{color:#c8f6ff;background:#244453;border-color:#65d9e2;box-shadow:inset 0 3px #65d9e2}
+.market-category-tabs{display:flex;flex-wrap:wrap;gap:7px;margin:8px 0 12px}.market-category-tabs button{padding:10px 14px;background:#172839;border:1px solid #3c5b6c;color:#a9c1cc;font:15px var(--font-display);cursor:pointer}.market-category-tabs button[aria-pressed=true]{background:#295266;border-color:#78c9d8;color:#edf9f5}.market-filters{display:flex;align-items:end;gap:12px;flex-wrap:wrap;margin-bottom:16px;color:#a9c1cc;font:11px var(--font-ui)}.market-filters label{display:grid;gap:5px}.market-filters select{min-width:150px;padding:8px 11px;background:#172839;border:1px solid #4d6879;color:#e7f0ec;font:13px var(--font-ui)}.market-filters>span{margin-left:auto;padding:9px 0;color:#78c9d8}
 .market-list{display:grid;gap:10px}
 .market-offer{display:grid;grid-template-columns:70px minmax(170px,1fr) auto auto;align-items:center;gap:20px;padding:13px 20px}
 .market-offer-icon{width:66px;height:66px;display:grid;place-items:center;color:#f7bc64;font:35px var(--font-display);background:radial-gradient(circle,#2c3950,#152331 72%);border:1px solid #426077}

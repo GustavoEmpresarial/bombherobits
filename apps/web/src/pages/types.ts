@@ -19,10 +19,12 @@ export type WorldState = {
     price: number;
     seller: string;
     mine: boolean;
+    createdAt: string;
     heroClass: HeroClass | null;
     gear: ListedGear | null;
   }[];
   myListings: { id: string; kind: string; refId: string; title: string; price: number; heroClass: HeroClass | null; gear: ListedGear | null }[];
+  sales: { id: string; kind: string; title: string; price: number; createdAt: string }[];
   catalog: { tier: number; name: string; slots: number; rate: number; price: number }[];
   economy: {
     PORTER_PRICE: number;

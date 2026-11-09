@@ -24,16 +24,17 @@ export async function worldState(userId: string) {
   const {ECONOMY,BLACKSMITHS}=await runtimeRules();
   await processTicks(userId);
   const user = await ensureProfile(userId);
-  const [blacksmiths, porters, listings, myListings] = await Promise.all([
+  const [blacksmiths, porters, listings, myListings, sales] = await Promise.all([
     prisma.blacksmith.findMany({ where: { userId }, orderBy: { tier: "asc" } }),
     prisma.porter.findMany({ where: { userId } }),
     prisma.listing.findMany({
       where: { status: "OPEN", seller: user.wallet.startsWith("demo:") ? { wallet: { startsWith: "demo:" } } : { NOT: { wallet: { startsWith: "demo:" } } } },
       orderBy: { price: "asc" },
-      take: 40,
+      take: 200,
       include: { seller: { select: { displayName: true, wallet: true } } },
     }),
     prisma.listing.findMany({ where: { sellerId: userId, status: "OPEN" }, orderBy: { createdAt: "desc" }, take: 50 }),
+    prisma.listing.findMany({ where: { sellerId: userId, status: "SOLD" }, orderBy: { createdAt: "desc" }, take: 30 }),
   ]);
   const listedHeroIds = [...listings, ...myListings].filter((listing) => listing.kind === "HERO").map((listing) => listing.refId);
   const listedHeroes = listedHeroIds.length ? await prisma.hero.findMany({ where: { id: { in: listedHeroIds } }, select: { id: true, class: true } }) : [];
@@ -69,10 +70,12 @@ export async function worldState(userId: string) {
       price: toGold(l.price),
       seller: l.seller.displayName,
       mine: l.sellerId === userId,
+      createdAt: l.createdAt.toISOString(),
       heroClass: l.kind === "HERO" ? heroClassById.get(l.refId) ?? null : null,
       gear: l.kind === "GEAR" ? gearById.get(l.refId) ?? null : null,
     })),
     myListings: myListings.map((l) => ({ id: l.id, kind: l.kind, refId: l.refId, title: l.title, price: toGold(l.price), heroClass: l.kind === "HERO" ? heroClassById.get(l.refId) ?? null : null, gear: l.kind === "GEAR" ? gearById.get(l.refId) ?? null : null })),
+    sales: sales.map((l) => ({ id: l.id, kind: l.kind, title: l.title, price: toGold(l.price), createdAt: l.createdAt.toISOString() })),
     catalog: BLACKSMITHS,
     economy: ECONOMY,
   };
@@ -216,6 +219,8 @@ export async function listForSale(
     await tx.$queryRaw`SELECT "id" FROM "User" WHERE "id" = ${userId} FOR UPDATE`;
     const duplicate = await tx.listing.count({ where: { sellerId: userId, kind, refId, status: "OPEN" } });
     if (duplicate) throw fail("This item is already listed", 409);
+    const openListings = await tx.listing.count({ where: { sellerId: userId, status: "OPEN" } });
+    if (openListings >= 20) throw fail("You can have up to 20 open listings", 409);
     let title: string = kind;
     if (kind === "HERO") {
       const hero = await tx.hero.findFirst({ where: { id: refId, userId } });

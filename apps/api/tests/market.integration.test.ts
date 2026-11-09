@@ -23,6 +23,7 @@ test("market listing, purchase and cancellation transfer only one item", { skip:
     await buyListing(buyer.id, offer.id);
     assert.equal((await prisma.hero.findUniqueOrThrow({ where: { id: first.id } })).userId, buyer.id);
     assert.equal((await prisma.listing.findUniqueOrThrow({ where: { id: offer.id } })).status, "SOLD");
+    assert.equal((await worldState(seller.id)).sales.some(item => item.id === offer.id), true);
     await assert.rejects(() => buyListing(buyer.id, offer.id), /Listing is gone/);
     assert.equal(Number((await prisma.user.findUniqueOrThrow({ where: { id: buyer.id } })).gold), 400);
     await listForSale(seller.id, "HERO", second.id, 75);
@@ -43,6 +44,16 @@ test("market listing, purchase and cancellation transfer only one item", { skip:
   } finally {
     await prisma.user.deleteMany({ where: { id: { in: [seller.id, buyer.id] } } });
   }
+});
+
+test("market caps each seller at 20 open listings", { skip: process.env.HEROBITS_TEST_DATABASE !== "1" }, async () => {
+  const seller = await prisma.user.create({ data: { wallet: `demo:market-limit-${randomUUID()}`, displayName: "Market limit" } });
+  try {
+    const gear = await prisma.$transaction(Array.from({ length: 21 }, () => prisma.gearPiece.create({ data: { userId: seller.id, slot: "HELM", element: "FIRE", rarity: "STEEL", attack: 3, shield: 1200, shieldMax: 1200 } })));
+    for (const piece of gear.slice(0, 20)) await listForSale(seller.id, "GEAR", piece.id, 10);
+    await assert.rejects(() => listForSale(seller.id, "GEAR", gear[20].id, 10), /up to 20 open listings/);
+    assert.equal((await worldState(seller.id)).myListings.length, 20);
+  } finally { await prisma.user.delete({ where: { id: seller.id } }); }
 });
 
 test("listed gear leaves the armory and transfers once with its shield", { skip: process.env.HEROBITS_TEST_DATABASE !== "1" }, async () => {
