@@ -8,6 +8,7 @@ import { GameMusic } from "./GameMusic";
 
 const panels: Record<string, [string, string]> = {
   "/heroes": ["HEROES", "/"], "/shop": ["SHOP", "/"],
+  "/hall": ["HALL OF HEROES", "/heroes"],
   "/shop/summon": ["SUMMON", "/shop"], "/shop/blacksmiths": ["RECOVERY HOUSES", "/shop"],
   "/shop/porter": ["PORTER", "/shop"], "/shop/gear": ["GEAR", "/shop"], "/market": ["MARKET", "/"],
   "/invites": ["INVITES", "/"], "/chest": ["CHEST", "/"],
@@ -22,6 +23,7 @@ const shortcuts = [
   { to: "/", image: "/ui/v2/home.webp", label: "Home", caption: "HOME" },
   { to: "/dungeon", image: "/ui/v2/dungeon.webp", label: "Dungeon", caption: "DUNGEON" },
   { to: "/shop/summon", image: "/ui/v2/summon.webp", label: "Summon", caption: "SUMMON" },
+  { to: "/hall", image: "/ui/v2/hall.svg", label: "Hall of Heroes", caption: "HALL" },
   { to: "/shop/blacksmiths", image: "/ui/v2/houses.webp", label: "Recovery houses", caption: "HOUSES" },
   { to: "/shop/porter", image: "/ui/v2/porter.webp", label: "Porter", caption: "PORTER" },
   { to: "/fusion", image: "/shop/fusion-altar.png", label: "Fusion", caption: "FUSION" },

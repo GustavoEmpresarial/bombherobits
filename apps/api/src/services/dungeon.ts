@@ -481,6 +481,7 @@ export async function deployHero(userId: string, heroId: string) {
   if (hero.status === "HUNTING") {
     throw Object.assign(new Error("Hero already hunting"), { statusCode: 400 });
   }
+  if (!hero.active) throw Object.assign(new Error("Activate this hero on the Team page first"), { statusCode: 400 });
   if (hero.stamina <= 0) {
     throw Object.assign(new Error("Hero has no stamina"), { statusCode: 400 });
   }
@@ -504,8 +505,8 @@ export async function deployHero(userId: string, heroId: string) {
     throw Object.assign(new Error("No free cell"), { statusCode: 400 });
   }
 
-  await prisma.hero.update({
-    where: { id: hero.id },
+  const placed = await prisma.hero.updateMany({
+    where: { id: hero.id, userId, active: true, status: "IDLE" },
     data: {
       status: "HUNTING",
       staminaRecoveryUnits: 0,
@@ -513,6 +514,7 @@ export async function deployHero(userId: string, heroId: string) {
       dungeonY: cell.y,
     },
   });
+  if (!placed.count) throw Object.assign(new Error("Hero status changed. Try again."), { statusCode: 409 });
 
   return buildSnapshot(userId);
 }
@@ -526,7 +528,7 @@ export async function deployAllIdle(userId: string, mode: "all" | "over-half" = 
   }
 
   const idle = (await prisma.hero.findMany({
-    where: { userId, status: "IDLE", stamina: { gt: 0 }, shield: { gt: 0 } },
+    where: { userId, status: "IDLE", active: true, stamina: { gt: 0 }, shield: { gt: 0 } },
   })).filter(hero => mode === "all" || hero.stamina > hero.maxStamina / 2);
 
   let working = await prisma.hero.count({
@@ -548,8 +550,8 @@ export async function deployAllIdle(userId: string, mode: "all" | "over-half" = 
     if (working >= GAME.MAX_WORKING_HEROES) break;
     const cell = randomEmptyCell(occupied);
     if (!cell) break;
-    await prisma.hero.update({
-      where: { id: hero.id },
+    const placed = await prisma.hero.updateMany({
+      where: { id: hero.id, userId, active: true, status: "IDLE" },
       data: {
         status: "HUNTING",
         staminaRecoveryUnits: 0,
@@ -557,7 +559,7 @@ export async function deployAllIdle(userId: string, mode: "all" | "over-half" = 
         dungeonY: cell.y,
       },
     });
-    working += 1;
+    if (placed.count) working += 1;
   }
 
   return buildSnapshot(userId);

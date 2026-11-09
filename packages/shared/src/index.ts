@@ -149,8 +149,23 @@ export interface HeroDto {
   skills: HeroSkill[];
   forgeMode: "AUTO" | "PINNED" | "EXCLUDED";
   status: HeroStatus;
+  active: boolean;
   dungeonX: number | null;
   dungeonY: number | null;
+}
+
+export interface HallStateDto {
+  season: number;
+  startsAt: string;
+  endsAt: string;
+  multiplier: number;
+  glory: number;
+  retired: number;
+  milestones: { points: number; label: string; claimed: boolean; unlocked: boolean }[];
+  races: { points: number; label: string; seats: number; left: number; claimed: boolean; unlocked: boolean }[];
+  standings: { userId: string; displayName: string; glory: number; retired: number; rank: number }[];
+  me: { userId: string; displayName: string; glory: number; retired: number; rank: number } | null;
+  gloryByRarity: Record<HeroRarity, number>;
 }
 
 export interface TargetDto {

@@ -3,6 +3,7 @@ import type {
   AuthResponse,
   DungeonSnapshot,
   HeroDto,
+  HallStateDto,
   UserDto,
   SummonBatchDto, SummonPurchaseDto, SummonClaimDto,
   FusionResultDto,
@@ -68,6 +69,10 @@ export const api = {
   me: (token: string) => request<UserDto>("/me", { token }),
 
   heroes: (token: string) => request<HeroDto[]>("/heroes", { token }),
+  hall: (token: string) => request<HallStateDto>("/hall", { token }),
+  retireHeroes: (token: string, heroIds: string[], requestKey: string) => request<HallStateDto>("/hall/retire", { method: "POST", token, body: JSON.stringify({ heroIds, requestKey }) }),
+  claimHall: (token: string, milestone: number) => request<HallStateDto>("/hall/claim", { method: "POST", token, body: JSON.stringify({ milestone }) }),
+  claimHallRace: (token: string, threshold: number) => request<HallStateDto>("/hall/race", { method: "POST", token, body: JSON.stringify({ threshold }) }),
   scrapHero: (token: string, id: string) => request<{ scrapReceived: number; user: UserDto }>(`/heroes/${id}/scrap`, { method: "POST", token, body: "{}" }),
   buyScrap: (token: string, amount: number, source: "gold" | "chest" = "gold") => request<{ scrap: number; cost: number; source: "gold" | "chest"; user: UserDto }>("/shop/scrap", { method: "POST", token, body: JSON.stringify({ amount, source }) }),
   repairShield: (token: string, id: string) => request<{ cost: number; hero: HeroDto; user: UserDto }>(`/heroes/${id}/shield/repair`, { method: "POST", token, body: "{}" }),
@@ -95,6 +100,7 @@ export const api = {
       token,
       body: "{}",
     }),
+  activateHero: (token: string, id: string) => request<HeroDto>(`/heroes/${id}/activate`, { method: "POST", token, body: "{}" }),
 
   startDungeon: (token: string) =>
     request<DungeonSnapshot>("/dungeon/start", {

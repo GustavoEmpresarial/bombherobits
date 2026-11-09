@@ -16,6 +16,7 @@ import { worldRoutes } from "./routes/world.js";
 import { fusionRoutes } from "./routes/fusion.js";
 import { rankingRoutes } from "./routes/ranking.js";
 import { gearRoutes } from "./routes/gear.js";
+import { hallRoutes } from "./routes/hall.js";
 import { mailRoutes } from "./routes/mail.js";
 import { adminRoutes } from "./routes/admin.js";
 import { getSettings } from "./services/config.js";
@@ -63,6 +64,7 @@ async function main() {
   await app.register(fusionRoutes);
   await app.register(rankingRoutes);
   await app.register(gearRoutes);
+  await app.register(hallRoutes);
   await app.register(mailRoutes);
   await app.register(adminRoutes);
 

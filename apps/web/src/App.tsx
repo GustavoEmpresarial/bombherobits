@@ -19,6 +19,7 @@ import { ArmoryPage } from "./pages/ArmoryPage";
 import { ScrapShopPage } from "./pages/ScrapShopPage";
 import { GearShopPage } from "./pages/GearShopPage";
 import { TeamPage } from "./pages/TeamPage";
+import { HallPage } from "./pages/HallPage";
 import { MailPage } from "./pages/MailPage";
 import { StakePage } from "./pages/StakePage";
 import { InvitesPage } from "./pages/InvitesPage";
@@ -56,6 +57,7 @@ export function App() {
       >
         <Route index element={<HomePage />} />
         <Route path="heroes" element={<TeamPage />} />
+        <Route path="hall" element={<HallPage />} />
         <Route path="dungeon" element={<Suspense fallback={<PageState />}><DungeonPage /></Suspense>} />
         <Route path="shop" element={<ShopPage />} />
         <Route path="shop/summon" element={<SummonPage />} />

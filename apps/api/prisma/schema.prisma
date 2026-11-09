@@ -144,6 +144,9 @@ model User {
   gearPieces   GearPiece[]
   gearPurchases GearPurchase[]
   gearBoxBatches GearBoxBatch[]
+  hallRetirements HallRetirement[]
+  hallClaims HallClaim[]
+  hallRaceClaims HallRaceClaim[]
 }
 
 model GearPiece {
@@ -298,6 +301,7 @@ model Hero {
   staminaUsageUnits Int @default(0)
   forgeMode  String     @default("AUTO")
   status     HeroStatus @default(IDLE)
+  active     Boolean    @default(true)
   dungeonX   Int?
   dungeonY   Int?
   createdAt  DateTime   @default(now())
@@ -306,6 +310,45 @@ model Hero {
   @@index([userId])
   @@index([userId, status])
   @@unique([summonBatchId,summonSlot])
+}
+
+model HallRetirement {
+  id        String @id @default(cuid())
+  userId    String
+  user      User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  heroId    String @unique
+  requestKey String
+  season    Int
+  rarity    HeroRarity
+  glory     Int
+  createdAt DateTime @default(now())
+
+  @@index([userId, season])
+  @@index([userId, requestKey])
+  @@index([season, glory])
+}
+
+model HallClaim {
+  id        String @id @default(cuid())
+  userId    String
+  user      User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  season    Int
+  milestone Int
+  createdAt DateTime @default(now())
+
+  @@unique([userId, season, milestone])
+}
+
+model HallRaceClaim {
+  id        String @id @default(cuid())
+  userId    String
+  user      User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  season    Int
+  threshold Int
+  createdAt DateTime @default(now())
+
+  @@unique([userId, season, threshold])
+  @@index([season, threshold])
 }
 
 model DungeonRun {

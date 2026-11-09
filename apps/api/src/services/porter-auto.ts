@@ -33,7 +33,7 @@ export async function runPorter(userId: string): Promise<boolean> {
     let changed = false;
     if (user.shieldRepairOn) {
       let scrapRemaining = user.scrap;
-      const broken = heroes.filter(hero => hero.status === "IDLE" && hero.shield <= 0
+      const broken = heroes.filter(hero => hero.status === "IDLE" && hero.active && hero.shield <= 0
         && user.shieldRepairRarities.includes(hero.rarity))
         .sort(comparePriority);
       for (const hero of broken) {
@@ -48,7 +48,7 @@ export async function runPorter(userId: string): Promise<boolean> {
       }
     }
     const working = heroes.filter(hero => hero.status === "HUNTING" && hero.dungeonX !== null && hero.dungeonY !== null);
-    const ready = heroes.filter(hero => hero.status === "IDLE" && hero.shield > 0
+    const ready = heroes.filter(hero => hero.status === "IDLE" && hero.active && hero.shield > 0
       && hero.stamina >= Math.ceil(hero.maxStamina * 0.8))
       .sort(comparePriority);
     if (!ready.length) return changed;

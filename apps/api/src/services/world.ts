@@ -280,7 +280,7 @@ export async function buyListing(userId: string, listingId: string) {
       if (capacity + (pending._sum.count ?? 0) >= ECONOMY.MAX_ACTIVE) throw fail("Hero roster is full");
       const incomingGear = await tx.gearPiece.count({ where: { userId: listing.sellerId, heroId: listing.refId } });
       if (await tx.gearPiece.count({ where: { userId } }) + incomingGear > 500) throw fail("Armory is full");
-      const moved = await tx.hero.updateMany({ where: { id: listing.refId, userId: listing.sellerId, status: "LISTED" }, data: { userId, status: "IDLE", forgeMode: "AUTO", dungeonX: null, dungeonY: null } });
+      const moved = await tx.hero.updateMany({ where: { id: listing.refId, userId: listing.sellerId, status: "LISTED" }, data: { userId, status: "IDLE", active: false, forgeMode: "AUTO", dungeonX: null, dungeonY: null } });
       if (!moved.count) throw fail("Hero is no longer available", 409);
       await tx.gearPiece.updateMany({ where: { userId: listing.sellerId, heroId: listing.refId }, data: { userId, lastHeroId: null, movedDay: null } });
     } else if (listing.kind === "BLACKSMITH") {

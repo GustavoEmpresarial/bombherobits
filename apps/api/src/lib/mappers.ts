@@ -46,6 +46,7 @@ export function toHeroDto(hero: Hero): HeroDto {
     skills: Array.isArray(hero.skills) ? hero.skills.filter((value): value is HeroSkill => typeof value === "string" && HERO_SKILLS.includes(value as HeroSkill)) : [],
     forgeMode: hero.forgeMode as HeroDto["forgeMode"],
     status: hero.status,
+    active: hero.active,
     dungeonX: hero.dungeonX,
     dungeonY: hero.dungeonY,
   };
