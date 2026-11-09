@@ -2,9 +2,9 @@
 
 Current targets: http://5.189.157.88 and https://bombherobits.pro.
 
-Active release: 20261108-team-gear, deployed November 8, 2026. The API and web images were built on the VM, the batch gear purchase migration was applied after a database backup, and HTTPS health, Team/Gear Shop demo routes, and authenticated-only equipment API were checked externally. Docker Chromium also rendered both new production routes without browser errors. The previous release is 20261108-gear-market-pity.
+Active release: 20261108-market-filters, deployed November 8, 2026. The API and web images were built on the VM after a database backup. HTTPS health and Docker Chromium verification of market category/rarity/sort filters passed without browser errors. The previous release is 20261108-team-gear, which added the Team/Gear Shop routes and batch gear purchase migration.
 
-Initial database backup: /opt/herobits/shared/initial-deployment.dump. Pre-update backups include /opt/herobits/shared/pre-20261108-equipment.dump, /opt/herobits/shared/pre-20261108-gear-market-pity.dump and /opt/herobits/shared/pre-20261108-team-gear.dump. Edge proxy backup: /opt/herobits/shared/edge-nginx-before.conf. The current release symlink is /opt/herobits/current.
+Initial database backup: /opt/herobits/shared/initial-deployment.dump. Pre-update backups include /opt/herobits/shared/pre-20261108-equipment.dump, /opt/herobits/shared/pre-20261108-gear-market-pity.dump, /opt/herobits/shared/pre-20261108-team-gear.dump and /opt/herobits/shared/pre-20261108-market-filters.dump. Edge proxy backup: /opt/herobits/shared/edge-nginx-before.conf. The current release symlink is /opt/herobits/current.
 
 The application runs as a separate Docker Compose project, with its own PostgreSQL volume. The existing edge proxy routes the bare IP and bombherobits.pro on port 80 to this app. Other domain routes and the existing direct port 5000 service are preserved.
 
