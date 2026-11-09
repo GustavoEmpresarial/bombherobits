@@ -2,9 +2,9 @@
 
 Current targets: http://5.189.157.88 and https://bombherobits.pro.
 
-Active release: 20261108-gear-market-pity, deployed November 8, 2026. The API and web images were built on the VM, the gear market and rarity guarantee migrations were applied after a database backup, and HTTPS health, armory/market routes, and authenticated-only equipment API were checked externally. The previous release is 20261108-equipment.
+Active release: 20261108-team-gear, deployed November 8, 2026. The API and web images were built on the VM, the batch gear purchase migration was applied after a database backup, and HTTPS health, Team/Gear Shop demo routes, and authenticated-only equipment API were checked externally. Docker Chromium also rendered both new production routes without browser errors. The previous release is 20261108-gear-market-pity.
 
-Initial database backup: /opt/herobits/shared/initial-deployment.dump. Pre-update backups include /opt/herobits/shared/pre-20261108-equipment.dump and /opt/herobits/shared/pre-20261108-gear-market-pity.dump. Edge proxy backup: /opt/herobits/shared/edge-nginx-before.conf. The current release symlink is /opt/herobits/current.
+Initial database backup: /opt/herobits/shared/initial-deployment.dump. Pre-update backups include /opt/herobits/shared/pre-20261108-equipment.dump, /opt/herobits/shared/pre-20261108-gear-market-pity.dump and /opt/herobits/shared/pre-20261108-team-gear.dump. Edge proxy backup: /opt/herobits/shared/edge-nginx-before.conf. The current release symlink is /opt/herobits/current.
 
 The application runs as a separate Docker Compose project, with its own PostgreSQL volume. The existing edge proxy routes the bare IP and bombherobits.pro on port 80 to this app. Other domain routes and the existing direct port 5000 service are preserved.
 
