@@ -48,6 +48,13 @@ export function ShopPage() {
           </span>
         </button>
 
+        <button type="button" className="mode mode-gear" onClick={() => navigate("/shop/gear")}>
+          <span className="mode-card">
+            <span className="mode-art art-gear-shop" aria-hidden="true"><img src="/ui/equipment/helm.svg" alt="" /><img src="/ui/equipment/armor.svg" alt="" /><img src="/ui/equipment/boots.svg" alt="" /></span>
+            <span className="mode-name">GEAR</span><span className="shop-description">Open gear boxes and strengthen your party</span>
+          </span>
+        </button>
+
         <button
           type="button"
           className={`mode mode-porter${hasSmith ? "" : " disabled"}`}

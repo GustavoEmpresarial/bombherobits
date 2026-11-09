@@ -24,27 +24,48 @@ export async function listEquipment(userId: string) {
   return pieces.map(dto);
 }
 
-export async function buyEquipment(userId: string, box: GearBox, requestKey: string) {
-  if (!GEAR_BOXES.includes(box) || typeof requestKey !== "string" || !/^[a-zA-Z0-9_-]{8,80}$/.test(requestKey)) throw fail("Choose a gear box and a valid request key");
+export async function buyEquipmentBatch(userId: string, box: GearBox, count: number, source: "gold" | "chest", requestKey: string) {
+  if (!GEAR_BOXES.includes(box) || ![1, 5, 10, 15].includes(count) || !["gold", "chest"].includes(source) || typeof requestKey !== "string" || !/^[a-zA-Z0-9_-]{8,80}$/.test(requestKey)) throw fail("Choose a gear box, quantity, balance and valid request key");
   return prisma.$transaction(async (tx) => {
     const buyer = await lockUser(tx, userId);
+    const priorBatch = await tx.gearBoxBatch.findUnique({ where: { userId_requestKey: { userId, requestKey } } });
+    if (priorBatch) {
+      if (priorBatch.box !== box || priorBatch.count !== count || priorBatch.source !== source) throw fail("This request key belongs to a different gear purchase", 409);
+      const pieces = priorBatch.results as unknown as GearPieceDto[];
+      return { piece: pieces[0] ?? null, pieces, user: toUserDto(buyer), repeated: true, totalCost: priorBatch.totalCost, source };
+    }
     const previous = await tx.gearPurchase.findUnique({ where: { userId_requestKey: { userId, requestKey } }, include: { piece: true } });
-    if (previous) return { piece: previous.piece ? dto(previous.piece) : null, user: toUserDto(await tx.user.findUniqueOrThrow({ where: { id: userId } })), repeated: true };
-    if (await tx.gearPiece.count({ where: { userId } }) >= 500) throw fail("The armory is full (500 pieces)");
+    if (previous) {
+      if (count !== 1 || source !== "gold") throw fail("This request key belongs to a different gear purchase", 409);
+      const piece = previous.piece ? dto(previous.piece) : null;
+      return { piece, pieces: piece ? [piece] : [], user: toUserDto(buyer), repeated: true, totalCost: previous.cost, source };
+    }
+    if (await tx.gearPiece.count({ where: { userId } }) + count > 500) throw fail("The armory is full (500 pieces)");
     const boxRules = GEAR_RULES[box];
-    const paid = await tx.user.updateMany({ where: { id: userId, gold: { gte: boxRules.price } }, data: { gold: { decrement: boxRules.price } } });
-    if (!paid.count) throw fail(`Need ${boxRules.price} game gold for this box`);
-    const rolled = chooseGearRarity(box, randomInt(gearRarityDrawSize(box)));
-    const { rarity, pity } = advanceGearPity(rolled, { blue: buyer.gearPityBlue, purple: buyer.gearPityPurple, gold: buyer.gearPityGold });
-    const rules = GEAR_RULES[rarity];
-    const piece = await tx.gearPiece.create({ data: {
-      userId, rarity, slot: roll(GEAR_SLOTS), element: roll(GEAR_ELEMENTS),
-      attack: randomInt(rules.attack[0], rules.attack[1] + 1), shield: rules.shield, shieldMax: rules.shield,
-    } });
-    await tx.user.update({ where: { id: userId }, data: { gearPityBlue: pity.blue, gearPityPurple: pity.purple, gearPityGold: pity.gold } });
-    await tx.gearPurchase.create({ data: { userId, requestKey, pieceId: piece.id, cost: boxRules.price } });
-    return { piece: dto(piece), user: toUserDto(await tx.user.findUniqueOrThrow({ where: { id: userId } })), repeated: false };
-  });
+    const totalCost = boxRules.price * count;
+    const paid = await tx.user.updateMany({ where: { id: userId, [source]: { gte: totalCost } }, data: { [source]: { decrement: totalCost } } });
+    if (!paid.count) throw fail(`Need ${totalCost} in your ${source === "chest" ? "hunting chest" : "game balance"} for these boxes`);
+    let pity = { blue: buyer.gearPityBlue, purple: buyer.gearPityPurple, gold: buyer.gearPityGold };
+    const pieces: GearPieceDto[] = [];
+    for (let index = 0; index < count; index++) {
+      const rolled = chooseGearRarity(box, randomInt(gearRarityDrawSize(box)));
+      const result = box === "STEEL" ? advanceGearPity(rolled, pity) : { rarity: rolled, pity };
+      pity = result.pity;
+      const rules = GEAR_RULES[result.rarity];
+      const piece = await tx.gearPiece.create({ data: {
+        userId, rarity: result.rarity, slot: roll(GEAR_SLOTS), element: roll(GEAR_ELEMENTS),
+        attack: randomInt(rules.attack[0], rules.attack[1] + 1), shield: rules.shield, shieldMax: rules.shield,
+      } });
+      pieces.push(dto(piece));
+    }
+    if (box === "STEEL") await tx.user.update({ where: { id: userId }, data: { gearPityBlue: pity.blue, gearPityPurple: pity.purple, gearPityGold: pity.gold } });
+    await tx.gearBoxBatch.create({ data: { userId, requestKey, box, count, source, totalCost, results: pieces as unknown as Prisma.InputJsonValue } });
+    return { piece: pieces[0] ?? null, pieces, user: toUserDto(await tx.user.findUniqueOrThrow({ where: { id: userId } })), repeated: false, totalCost, source };
+  }, { timeout: 15000 });
+}
+
+export async function buyEquipment(userId: string, box: GearBox, requestKey: string) {
+  return buyEquipmentBatch(userId, box, 1, "gold", requestKey);
 }
 
 export async function equipEquipment(userId: string, pieceId: string, heroId: string) {

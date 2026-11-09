@@ -41,7 +41,7 @@ async function request<T>(
 
 export const api = {
   equipment: (token: string) => request<GearPieceDto[]>("/equipment", { token, cache: "no-store" }),
-  buyEquipment: (token: string, rarity: GearBox, requestKey: string) => request<{ piece: GearPieceDto | null; user: UserDto; repeated: boolean }>("/equipment/boxes", { method: "POST", token, body: JSON.stringify({ rarity, requestKey }) }),
+  buyEquipment: (token: string, rarity: GearBox, count: 1 | 5 | 10 | 15, source: "gold" | "chest", requestKey: string) => request<{ piece: GearPieceDto | null; pieces: GearPieceDto[]; user: UserDto; repeated: boolean; totalCost: number; source: string }>("/equipment/boxes", { method: "POST", token, body: JSON.stringify({ rarity, count, source, requestKey }) }),
   equipEquipment: (token: string, id: string, heroId: string) => request<GearPieceDto>(`/equipment/${id}/equip`, { method: "POST", token, body: JSON.stringify({ heroId }) }),
   removeEquipment: (token: string, id: string) => request<GearPieceDto>(`/equipment/${id}/remove`, { method: "POST", token, body: "{}" }),
   repairEquipment: (token: string, id: string) => request<{ piece: GearPieceDto; user: UserDto; cost: number }>(`/equipment/${id}/repair`, { method: "POST", token, body: "{}" }),

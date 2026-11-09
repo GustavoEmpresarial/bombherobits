@@ -9,7 +9,7 @@ import { GameMusic } from "./GameMusic";
 const panels: Record<string, [string, string]> = {
   "/heroes": ["HEROES", "/"], "/shop": ["SHOP", "/"],
   "/shop/summon": ["SUMMON", "/shop"], "/shop/blacksmiths": ["RECOVERY HOUSES", "/shop"],
-  "/shop/porter": ["PORTER", "/shop"], "/market": ["MARKET", "/"],
+  "/shop/porter": ["PORTER", "/shop"], "/shop/gear": ["GEAR", "/shop"], "/market": ["MARKET", "/"],
   "/invites": ["INVITES", "/"], "/chest": ["CHEST", "/"],
   "/withdraw": ["REWARD TRANSFER", "/chest"], "/settings": ["SETTINGS", "/"],
   "/fusion": ["FUSION", "/"],

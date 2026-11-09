@@ -143,6 +143,7 @@ model User {
   mails        PlayerMail[]
   gearPieces   GearPiece[]
   gearPurchases GearPurchase[]
+  gearBoxBatches GearBoxBatch[]
 }
 
 model GearPiece {
@@ -177,6 +178,21 @@ model GearPurchase {
   piece      GearPiece? @relation(fields: [pieceId], references: [id], onDelete: SetNull)
   cost       Int
   createdAt  DateTime  @default(now())
+
+  @@unique([userId, requestKey])
+}
+
+model GearBoxBatch {
+  id         String     @id @default(cuid())
+  userId     String
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  requestKey String
+  box        GearRarity
+  count      Int
+  source     String
+  totalCost  Int
+  results    Json
+  createdAt  DateTime   @default(now())
 
   @@unique([userId, requestKey])
 }

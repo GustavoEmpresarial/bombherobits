@@ -17,6 +17,8 @@ import { FusionPage } from "./pages/FusionPage";
 import { RankingPage } from "./pages/RankingPage";
 import { ArmoryPage } from "./pages/ArmoryPage";
 import { ScrapShopPage } from "./pages/ScrapShopPage";
+import { GearShopPage } from "./pages/GearShopPage";
+import { TeamPage } from "./pages/TeamPage";
 import { MailPage } from "./pages/MailPage";
 import { StakePage } from "./pages/StakePage";
 import { InvitesPage } from "./pages/InvitesPage";
@@ -53,13 +55,14 @@ export function App() {
         }
       >
         <Route index element={<HomePage />} />
-        <Route path="heroes" element={<Navigate to="/dungeon" replace />} />
+        <Route path="heroes" element={<TeamPage />} />
         <Route path="dungeon" element={<Suspense fallback={<PageState />}><DungeonPage /></Suspense>} />
         <Route path="shop" element={<ShopPage />} />
         <Route path="shop/summon" element={<SummonPage />} />
         <Route path="shop/blacksmiths" element={<BlacksmithPage />} />
         <Route path="shop/porter" element={<PorterPage />} />
         <Route path="shop/scrap" element={<ScrapShopPage />} />
+        <Route path="shop/gear" element={<GearShopPage />} />
         <Route path="market" element={<MarketPage />} />
         <Route path="fusion" element={<FusionPage />} />
         <Route path="ranking" element={<RankingPage />} />

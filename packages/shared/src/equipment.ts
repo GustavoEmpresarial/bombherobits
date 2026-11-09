@@ -4,6 +4,8 @@ export const GEAR_RARITIES = ["STEEL", "GREEN", "BLUE", "PURPLE", "GOLD", "MYTHI
 export const GEAR_BOXES = ["STEEL", "GREEN", "BLUE"] as const;
 export const GEAR_WEIGHTS = [6000, 2500, 1000, 350, 120, 30] as const;
 export const GEAR_PITY_LIMITS = { blue: 15, purple: 50, gold: 150 } as const;
+export const GEAR_LABELS = { STEEL: "Common", GREEN: "Uncommon", BLUE: "Rare", PURPLE: "Epic", GOLD: "Legendary", MYTHIC: "Mythic" } as const;
+export const GEAR_BOX_LABELS = { STEEL: "Gear Box", GREEN: "Green Gear Box", BLUE: "Blue Gear Box" } as const;
 export type GearSlot = typeof GEAR_SLOTS[number];
 export type GearElement = typeof GEAR_ELEMENTS[number];
 export type GearRarity = typeof GEAR_RARITIES[number];
@@ -11,9 +13,9 @@ export type GearBox = typeof GEAR_BOXES[number];
 export type GearPity = { blue: number; purple: number; gold: number };
 
 export const GEAR_RULES: Record<GearRarity, { price: number; attack: [number, number]; shield: number; repair: number; salvage: number; fusion: number }> = {
-  STEEL: { price: 150, attack: [2, 5], shield: 1200, repair: 1, salvage: 3, fusion: 12 },
-  GREEN: { price: 450, attack: [6, 9], shield: 2400, repair: 2, salvage: 7, fusion: 24 },
-  BLUE: { price: 1200, attack: [10, 15], shield: 4800, repair: 4, salvage: 15, fusion: 48 },
+  STEEL: { price: 10000, attack: [2, 5], shield: 1200, repair: 1, salvage: 3, fusion: 12 },
+  GREEN: { price: 20000, attack: [6, 9], shield: 2400, repair: 2, salvage: 7, fusion: 24 },
+  BLUE: { price: 35000, attack: [10, 15], shield: 4800, repair: 4, salvage: 15, fusion: 48 },
   PURPLE: { price: 0, attack: [16, 22], shield: 8400, repair: 7, salvage: 32, fusion: 96 },
   GOLD: { price: 0, attack: [23, 29], shield: 10800, repair: 9, salvage: 64, fusion: 192 },
   MYTHIC: { price: 0, attack: [30, 38], shield: 20400, repair: 17, salvage: 128, fusion: 0 },
@@ -39,7 +41,7 @@ export function advanceGearPity(rolled: GearRarity, current: GearPity): { rarity
   const guaranteed: GearRarity = current.gold + 1 >= GEAR_PITY_LIMITS.gold ? "GOLD"
     : current.purple + 1 >= GEAR_PITY_LIMITS.purple ? "PURPLE"
       : current.blue + 1 >= GEAR_PITY_LIMITS.blue ? "BLUE" : rolled;
-  const rarity = GEAR_RARITIES.indexOf(rolled) > GEAR_RARITIES.indexOf(guaranteed) ? rolled : guaranteed;
+  const rarity = guaranteed;
   return { rarity, pity: {
     blue: rarity === "BLUE" ? 0 : Math.min(GEAR_PITY_LIMITS.blue - 1, current.blue + 1),
     purple: rarity === "PURPLE" ? 0 : Math.min(GEAR_PITY_LIMITS.purple - 1, current.purple + 1),

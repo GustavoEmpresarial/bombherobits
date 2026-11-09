@@ -4,7 +4,7 @@ import assert from "node:assert/strict";
 import { randomUUID } from "node:crypto";
 import { advanceGearPity, chooseGearRarity, equipmentAttack, gearRarityDrawSize } from "@herobits/shared";
 import { prisma } from "../src/lib/prisma.js";
-import { buyEquipment, equipEquipment, fuseEquipment, listEquipment, removeEquipment, repairEquipment, salvageEquipment } from "../src/services/equipment.js";
+import { buyEquipment, buyEquipmentBatch, equipEquipment, fuseEquipment, listEquipment, removeEquipment, repairEquipment, salvageEquipment } from "../src/services/equipment.js";
 
 after(() => prisma.$disconnect());
 const enabled = { skip: process.env.HEROBITS_TEST_DATABASE !== "1" };
@@ -16,7 +16,7 @@ test("three intact matching gear elements grant a ten percent attack bonus", () 
   assert.equal(equipmentAttack([pieces[0], { ...pieces[1], element: "FROST" as const }, pieces[2]]), 60);
 });
 
-test("gear boxes respect rarity floors and the strongest due guarantee wins", () => {
+test("gear boxes respect rarity floors and guarantees produce the exact tier", () => {
   assert.equal(gearRarityDrawSize("STEEL"), 10000);
   assert.equal(gearRarityDrawSize("GREEN"), 4000);
   assert.equal(gearRarityDrawSize("BLUE"), 1500);
@@ -26,20 +26,20 @@ test("gear boxes respect rarity floors and the strongest due guarantee wins", ()
   assert.equal(chooseGearRarity("BLUE", 1499), "MYTHIC");
   assert.throws(() => chooseGearRarity("BLUE", 1500), RangeError);
   assert.deepEqual(advanceGearPity("STEEL", { blue: 14, purple: 49, gold: 149 }), { rarity: "GOLD", pity: { blue: 14, purple: 49, gold: 0 } });
-  assert.equal(advanceGearPity("MYTHIC", { blue: 14, purple: 49, gold: 149 }).rarity, "MYTHIC");
+  assert.equal(advanceGearPity("MYTHIC", { blue: 14, purple: 49, gold: 149 }).rarity, "GOLD");
 });
 
 test("gear boxes charge once, enforce rarity and daily transfers, and keep repair/salvage atomic", enabled, async () => {
-  const user = await prisma.user.create({ data: { wallet: `demo:equipment-${randomUUID()}`, displayName: "Equipment QA", gold: 1000, scrap: 100 } });
+  const user = await prisma.user.create({ data: { wallet: `demo:equipment-${randomUUID()}`, displayName: "Equipment QA", gold: 20000, scrap: 100 } });
   try {
     const common = await prisma.hero.create({ data: { userId: user.id, class: "WARRIOR", rarity: "COMMON", atk: 8, spd: 1, stamina: 100, maxStamina: 100 } });
     const rare = await prisma.hero.create({ data: { userId: user.id, class: "MAGE", rarity: "RARE", atk: 12, spd: 1, stamina: 100, maxStamina: 100 } });
     const first = await buyEquipment(user.id, "STEEL", "equipment-qa-once");
     assert.ok(first.piece);
-    assert.equal(first.user.gold, 850);
+    assert.equal(first.user.gold, 10000);
     const retry = await buyEquipment(user.id, "STEEL", "equipment-qa-once");
     assert.equal(retry.piece?.id, first.piece.id);
-    assert.equal(retry.user.gold, 850);
+    assert.equal(retry.user.gold, 10000);
     const piece = await prisma.gearPiece.create({ data: { userId: user.id, rarity: "STEEL", slot: "HELM", element: "FIRE", attack: 3, shield: 1200, shieldMax: 1200 } });
     await equipEquipment(user.id, piece.id, common.id);
     await assert.rejects(() => equipEquipment(user.id, piece.id, rare.id), /Remove this piece/);
@@ -60,15 +60,37 @@ test("gear boxes charge once, enforce rarity and daily transfers, and keep repai
 });
 
 test("gear guarantees and idempotency stay durable across purchases", enabled, async () => {
-  const user = await prisma.user.create({ data: { wallet: `demo:gear-pity-${randomUUID()}`, displayName: "Gear Pity QA", gold: 1000, gearPityBlue: 14, gearPityPurple: 49, gearPityGold: 149 } });
+  const user = await prisma.user.create({ data: { wallet: `demo:gear-pity-${randomUUID()}`, displayName: "Gear Pity QA", gold: 10000, gearPityBlue: 14, gearPityPurple: 49, gearPityGold: 149 } });
   try {
     const first = await buyEquipment(user.id, "STEEL", "gear-pity-qa-once");
-    assert.ok(first.piece && ["GOLD", "MYTHIC"].includes(first.piece.rarity));
+    assert.equal(first.piece?.rarity, "GOLD");
     assert.deepEqual(first.user.gearPity, { blue: 14, purple: 49, gold: 0 });
     const retry = await buyEquipment(user.id, "STEEL", "gear-pity-qa-once");
     assert.equal(retry.piece?.id, first.piece?.id);
     assert.deepEqual(retry.user.gearPity, first.user.gearPity);
-    assert.equal(retry.user.gold, 850);
+    assert.equal(retry.user.gold, 0);
+  } finally { await prisma.user.delete({ where: { id: user.id } }); }
+});
+
+test("batch opening is atomic, idempotent and only the basic box fills guarantees", enabled, async () => {
+  const user = await prisma.user.create({ data: { wallet: `demo:gear-batch-${randomUUID()}`, displayName: "Batch QA", gold: 250000, chest: 250000, gearPityBlue: 14 } });
+  try {
+    const green = await buyEquipmentBatch(user.id, "GREEN", 5, "chest", "gear-batch-green");
+    assert.equal(green.pieces.length, 5);
+    assert.ok(green.pieces.every(piece => ["GREEN", "BLUE", "PURPLE", "GOLD", "MYTHIC"].includes(piece.rarity)));
+    assert.equal(green.user.chest, 150000);
+    assert.equal(green.user.gearPity.blue, 14);
+    const repeat = await buyEquipmentBatch(user.id, "GREEN", 5, "chest", "gear-batch-green");
+    assert.equal(repeat.repeated, true);
+    assert.deepEqual(repeat.pieces.map(piece => piece.id), green.pieces.map(piece => piece.id));
+    assert.equal(repeat.user.chest, 150000);
+    await assert.rejects(() => buyEquipmentBatch(user.id, "BLUE", 5, "chest", "gear-batch-green"), /different gear purchase/);
+    const steel = await buyEquipmentBatch(user.id, "STEEL", 5, "gold", "gear-batch-steel");
+    assert.equal(steel.pieces[0].rarity, "BLUE");
+    assert.ok(steel.user.gearPity.blue >= 0 && steel.user.gearPity.blue <= 4);
+    assert.equal(steel.user.gold, 200000);
+    await assert.rejects(() => buyEquipmentBatch(user.id, "BLUE", 15, "gold", "gear-batch-no-funds"), /Need 525000/);
+    assert.equal((await listEquipment(user.id)).length, 10);
   } finally { await prisma.user.delete({ where: { id: user.id } }); }
 });
 

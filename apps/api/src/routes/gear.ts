@@ -1,14 +1,14 @@
 import type { FastifyInstance } from "fastify";
 import { authenticate } from "../lib/auth.js";
 import { scrapHero, repairShield, upgradeShield, buyScrap } from "../services/gear.js";
-import { buyEquipment, equipEquipment, fuseEquipment, listEquipment, removeEquipment, repairEquipment, salvageEquipment } from "../services/equipment.js";
+import { buyEquipmentBatch, equipEquipment, fuseEquipment, listEquipment, removeEquipment, repairEquipment, salvageEquipment } from "../services/equipment.js";
 import type { GearBox } from "@herobits/shared";
 
 export async function gearRoutes(app: FastifyInstance) {
   app.get("/equipment", { preHandler: authenticate }, async (request) => listEquipment(request.user.id));
   app.post("/equipment/boxes", { preHandler: authenticate }, async (request) => {
-    const { rarity, requestKey } = (request.body ?? {}) as { rarity?: GearBox; requestKey?: string };
-    return buyEquipment(request.user.id, rarity as GearBox, requestKey ?? "");
+    const { rarity, count = 1, source = "gold", requestKey } = (request.body ?? {}) as { rarity?: GearBox; count?: number; source?: "gold" | "chest"; requestKey?: string };
+    return buyEquipmentBatch(request.user.id, rarity as GearBox, count, source, requestKey ?? "");
   });
   app.post("/equipment/fusion", { preHandler: authenticate }, async (request) => {
     const { pieceIds } = (request.body ?? {}) as { pieceIds?: string[] };
